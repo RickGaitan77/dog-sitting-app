@@ -3,11 +3,7 @@ import './App.css'
 import AppHeader from './components/AppHeader'
 import BottomNav from './components/BottomNav'
 import FloatingAddButton from './components/FloatingAddButton'
-import CalendarScreen from './screens/CalendarScreen'
-import AgendaScreen from './screens/AgendaScreen'
-import ClientsScreen from './screens/ClientsScreen'
-import MealsScreen from './screens/MealsScreen'
-import SettingsScreen from './screens/SettingsScreen'
+import { screenRegistry } from './config/screenRegistry'
 import type { AppScreen } from './Types/AppScreen'
 
 function App() {
@@ -19,30 +15,6 @@ function App() {
     setShowAddMenu(false)
   }
 
-  const renderScreen = () => {
-    if (activeTab === 'Calendar') {
-      return <CalendarScreen />
-    }
-
-    if (activeTab === 'Agenda') {
-      return <AgendaScreen />
-    }
-
-    if (activeTab === 'Clients') {
-      return <ClientsScreen />
-    }
-
-    if (activeTab === 'Meals') {
-      return <MealsScreen />
-    }
-
-    if (activeTab === 'Settings') {
-      return <SettingsScreen />
-    }
-
-    return null
-  }
-
   return (
     <main className="app-shell">
       <AppHeader
@@ -52,7 +24,7 @@ function App() {
       />
 
       <div className="app-content">
-        {renderScreen()}
+        {screenRegistry[activeTab]}
       </div>
 
       {activeTab !== 'Settings' && (
