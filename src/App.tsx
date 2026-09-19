@@ -4,6 +4,7 @@ import CalendarScreen from './screens/CalendarScreen'
 import AgendaScreen from './screens/AgendaScreen'
 import ClientsScreen from './screens/ClientsScreen'
 import MealsScreen from './screens/MealsScreen'
+import SettingsScreen from './screens/SettingsScreen'
 
 function App() {
   const [activeTab, setActiveTab] = useState('Calendar')
@@ -31,12 +32,11 @@ function App() {
       return <MealsScreen />
     }
 
-    return (
-      <section>
-        <h2>{activeTab}</h2>
-        <p>This is the {activeTab} screen.</p>
-      </section>
-    )
+    if (activeTab === 'Settings') {
+      return <SettingsScreen />
+    }
+
+    return null
   }
 
   return (
