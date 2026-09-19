@@ -1,6 +1,8 @@
+import type { AppScreen } from '../Types/AppScreen'
+
 type BottomNavProps = {
-  activeTab: string
-  onChangeTab: (tab: string) => void
+  activeTab: AppScreen
+  onChangeTab: (tab: AppScreen) => void
 }
 
 function BottomNav({ activeTab, onChangeTab }: BottomNavProps) {

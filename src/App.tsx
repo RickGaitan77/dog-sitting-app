@@ -8,12 +8,13 @@ import AgendaScreen from './screens/AgendaScreen'
 import ClientsScreen from './screens/ClientsScreen'
 import MealsScreen from './screens/MealsScreen'
 import SettingsScreen from './screens/SettingsScreen'
+import type { AppScreen } from './Types/AppScreen'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('Calendar')
+  const [activeTab, setActiveTab] = useState<AppScreen>('Calendar')
   const [showAddMenu, setShowAddMenu] = useState(false)
 
-  const changeTab = (tab: string) => {
+  const changeTab = (tab: AppScreen) => {
     setActiveTab(tab)
     setShowAddMenu(false)
   }
