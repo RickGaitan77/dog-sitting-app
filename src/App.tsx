@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import './App.css'
+import AppHeader from './components/AppHeader'
+import BottomNav from './components/BottomNav'
+import FloatingAddButton from './components/FloatingAddButton'
 import CalendarScreen from './screens/CalendarScreen'
 import AgendaScreen from './screens/AgendaScreen'
 import ClientsScreen from './screens/ClientsScreen'
@@ -41,25 +44,11 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="app-header">
-        <h1>Dog Sitting App</h1>
-
-        {activeTab === 'Settings' ? (
-          <button
-            className="settings-button"
-            onClick={() => changeTab('Calendar')}
-          >
-            Back
-          </button>
-        ) : (
-          <button
-            className="settings-button"
-            onClick={() => changeTab('Settings')}
-          >
-            Settings
-          </button>
-        )}
-      </header>
+      <AppHeader
+        isSettingsOpen={activeTab === 'Settings'}
+        onOpenSettings={() => changeTab('Settings')}
+        onBack={() => changeTab('Calendar')}
+      />
 
       <div className="app-content">
         {renderScreen()}
@@ -67,51 +56,17 @@ function App() {
 
       {activeTab !== 'Settings' && (
         <>
-          <nav className="bottom-nav">
-            <button
-              className={activeTab === 'Calendar' ? 'active' : ''}
-              onClick={() => changeTab('Calendar')}
-            >
-              Calendar
-            </button>
+          <BottomNav
+            activeTab={activeTab}
+            onChangeTab={changeTab}
+          />
 
-            <button
-              className={activeTab === 'Agenda' ? 'active' : ''}
-              onClick={() => changeTab('Agenda')}
-            >
-              Agenda
-            </button>
-
-            <button
-              className={activeTab === 'Clients' ? 'active' : ''}
-              onClick={() => changeTab('Clients')}
-            >
-              Clients
-            </button>
-
-            <button
-              className={activeTab === 'Meals' ? 'active' : ''}
-              onClick={() => changeTab('Meals')}
-            >
-              Meals
-            </button>
-          </nav>
-
-          {showAddMenu && (
-            <div className="add-menu">
-              <button>Add Booking</button>
-              <button>Add Event</button>
-              <button>Add Meal</button>
-            </div>
-          )}
-
-          <button
-            className="floating-add-button"
-            aria-label="Add new item"
-            onClick={() => setShowAddMenu((current) => !current)}
-          >
-            +
-          </button>
+          <FloatingAddButton
+            isOpen={showAddMenu}
+            onToggle={() =>
+              setShowAddMenu((current) => !current)
+            }
+          />
         </>
       )}
     </main>
