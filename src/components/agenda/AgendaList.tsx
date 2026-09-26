@@ -3,6 +3,7 @@ import type {
   Area,
   Booking,
   Client,
+  GeneralEvent,
   Pet,
   Service,
 } from '../../Types'
@@ -13,28 +14,38 @@ import {
   formatBookingDateRange,
   formatGroupDate,
   getUpcomingBookings,
+  getUpcomingEvents,
 } from './agendaDates'
+
+type AgendaItem =
+  | { kind: 'booking'; booking: Booking }
+  | { kind: 'event'; event: GeneralEvent }
 
 type AgendaListProps = {
   areas: Area[]
   bookings: Booking[]
   clients: Client[]
+  events: GeneralEvent[]
   pets: Pet[]
   services: Service[]
   onOpenBooking: (bookingId: string) => void
+  onOpenEvent: (eventId: string) => void
 }
 
 function AgendaList({
   areas,
   bookings,
   clients,
+  events,
   pets,
   services,
   onOpenBooking,
+  onOpenEvent,
 }: AgendaListProps) {
   const today = getTodayDateString()
   const windowEnd = addDays(today, AGENDA_WINDOW_DAYS)
   const upcomingBookings = getUpcomingBookings(bookings, today)
+  const upcomingEvents = getUpcomingEvents(events, today)
   const clientById = useMemo(
     () => new Map(clients.map((client) => [client.id, client])),
     [clients],
@@ -51,22 +62,29 @@ function AgendaList({
     () => new Map(services.map((service) => [service.id, service])),
     [services],
   )
-  const groups = new Map<string, Booking[]>()
+  const groups = new Map<string, AgendaItem[]>()
 
   upcomingBookings.forEach((booking) => {
     const dateBookings = groups.get(booking.startDate) ?? []
-    dateBookings.push(booking)
+    dateBookings.push({ kind: 'booking', booking })
     groups.set(booking.startDate, dateBookings)
   })
 
-  const groupedBookings = Array.from(groups.entries())
+  upcomingEvents.forEach((event) => {
+    const dateItems = groups.get(event.startDate) ?? []
+    dateItems.push({ kind: 'event', event })
+    groups.set(event.startDate, dateItems)
+  })
 
-  if (upcomingBookings.length === 0) {
+  const groupedItems = Array.from(groups.entries())
+    .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+
+  if (upcomingBookings.length === 0 && upcomingEvents.length === 0) {
     return (
       <div className="empty-state agenda-empty-state">
-        <h3>No upcoming bookings</h3>
+        <h3>No upcoming bookings or events</h3>
         <p>
-          There are no active bookings scheduled between today and the next{' '}
+          There is nothing scheduled between today and the next{' '}
           {AGENDA_WINDOW_DAYS} days.
         </p>
       </div>
@@ -75,14 +93,53 @@ function AgendaList({
 
   return (
     <div className="agenda-groups">
-      {groupedBookings.map(([date, dateBookings]) => {
+      {groupedItems.map(([date, dateItems]) => {
         const groupId = `agenda-date-${date}`
 
         return (
           <section className="agenda-group" aria-labelledby={groupId} key={date}>
             <h3 id={groupId}>{formatGroupDate(date, today)}</h3>
             <div className="agenda-list">
-              {dateBookings.map((booking) => {
+              {dateItems.map((item) => {
+                if (item.kind === 'event') {
+                  const event = item.event
+                  const area = event.areaId === undefined
+                    ? undefined
+                    : areaById.get(event.areaId)
+                  const areaColor = area?.color ?? '#81767b'
+                  const style = {
+                    '--agenda-area-color': areaColor,
+                  } as CSSProperties
+
+                  return (
+                    <article
+                      className="agenda-card agenda-event-card"
+                      style={style}
+                      key={`event-${event.id}`}
+                    >
+                      <button
+                        className="agenda-card-main"
+                        type="button"
+                        onClick={() => onOpenEvent(event.id)}
+                        aria-label={`Open ${event.title} event, ${formatBookingDateRange(event.startDate, event.endDate)}`}
+                      >
+                        <span className="agenda-card-heading">
+                          <strong>{event.title}</strong>
+                          <span className="event-badge">Event</span>
+                        </span>
+                        <span className="agenda-date-range">
+                          {formatBookingDateRange(event.startDate, event.endDate)}
+                        </span>
+                        <span className="agenda-area">
+                          <span className="agenda-area-dot" aria-hidden="true" />
+                          {area?.name ?? 'No area'}
+                        </span>
+                      </button>
+                    </article>
+                  )
+                }
+
+                const booking = item.booking
                 const clientName =
                   clientById.get(booking.clientId)?.name ?? 'Unknown client'
                 const petNames = booking.petIds
@@ -98,7 +155,7 @@ function AgendaList({
                 } as CSSProperties
 
                 return (
-                  <article className="agenda-card" style={style} key={booking.id}>
+                  <article className="agenda-card" style={style} key={`booking-${booking.id}`}>
                     <button
                       className="agenda-card-main"
                       type="button"
@@ -132,7 +189,7 @@ function AgendaList({
         )
       })}
       <p className="agenda-window-note">
-        Showing bookings through {formatBookingDateRange(windowEnd, windowEnd)}.
+        Showing the schedule through {formatBookingDateRange(windowEnd, windowEnd)}.
       </p>
     </div>
   )

@@ -11,6 +11,8 @@ function App() {
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [bookingCreationRequested, setBookingCreationRequested] =
     useState(false)
+  const [eventCreationRequested, setEventCreationRequested] =
+    useState(false)
 
   const changeTab = (tab: AppScreen) => {
     setActiveTab(tab)
@@ -28,8 +30,11 @@ function App() {
       <div className="app-content">
         {screenRegistry[activeTab]({
           bookingCreationRequested,
+          eventCreationRequested,
           onBookingCreationHandled: () =>
             setBookingCreationRequested(false),
+          onEventCreationHandled: () =>
+            setEventCreationRequested(false),
         })}
       </div>
 
@@ -45,7 +50,14 @@ function App() {
             onAddBooking={() => {
               setActiveTab('Calendar')
               setShowAddMenu(false)
+              setEventCreationRequested(false)
               setBookingCreationRequested(true)
+            }}
+            onAddEvent={() => {
+              setActiveTab('Calendar')
+              setShowAddMenu(false)
+              setBookingCreationRequested(false)
+              setEventCreationRequested(true)
             }}
             onToggle={() =>
               setShowAddMenu((current) => !current)

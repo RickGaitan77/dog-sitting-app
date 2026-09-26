@@ -1,4 +1,4 @@
-import type { Booking } from '../../Types'
+import type { Booking, GeneralEvent } from '../../Types'
 
 export const AGENDA_WINDOW_DAYS = 30
 
@@ -33,6 +33,26 @@ export function getUpcomingBookings(
         booking.status !== 'Cancelled' &&
         booking.startDate >= today &&
         booking.startDate <= windowEnd,
+    )
+    .sort(
+      (left, right) =>
+        left.startDate.localeCompare(right.startDate) ||
+        left.endDate.localeCompare(right.endDate) ||
+        left.id.localeCompare(right.id),
+    )
+}
+
+export function getUpcomingEvents(
+  events: GeneralEvent[],
+  today: string,
+  windowDays = AGENDA_WINDOW_DAYS,
+): GeneralEvent[] {
+  const windowEnd = addDays(today, windowDays)
+
+  return events
+    .filter(
+      (event) =>
+        event.startDate >= today && event.startDate <= windowEnd,
     )
     .sort(
       (left, right) =>

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import BookingForm from '../components/bookings/BookingForm'
 import MonthCalendar from '../components/calendar/MonthCalendar'
+import GeneralEventDetail from '../components/events/GeneralEventDetail'
+import GeneralEventForm from '../components/events/GeneralEventForm'
 import {
   getCurrentMonth,
   moveMonth,
@@ -15,13 +17,16 @@ import type {
   Booking,
   BookingStatus,
   Client,
+  GeneralEvent,
   Pet,
   Service,
 } from '../Types'
 
 type CalendarScreenProps = {
   bookingCreationRequested: boolean
+  eventCreationRequested: boolean
   onBookingCreationHandled: () => void
+  onEventCreationHandled: () => void
 }
 
 type BookingView =
@@ -30,6 +35,9 @@ type BookingView =
   | { name: 'create'; returnTo: BookingReturnView }
   | { name: 'detail'; bookingId: string; returnTo: BookingReturnView }
   | { name: 'edit'; bookingId: string; returnTo: BookingReturnView }
+  | { name: 'event-create' }
+  | { name: 'event-detail'; eventId: string }
+  | { name: 'event-edit'; eventId: string }
 
 type BookingReturnView = 'month' | 'manage'
 
@@ -39,9 +47,12 @@ function getReturnView(name: BookingReturnView): BookingView {
 
 function CalendarScreen({
   bookingCreationRequested,
+  eventCreationRequested,
   onBookingCreationHandled,
+  onEventCreationHandled,
 }: CalendarScreenProps) {
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [events, setEvents] = useState<GeneralEvent[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [pets, setPets] = useState<Pet[]>([])
   const [areas, setAreas] = useState<Area[]>([])
@@ -80,11 +91,23 @@ function CalendarScreen({
     )
   }, [])
 
+  const loadEvents = useCallback(async () => {
+    const storedEvents = await appServices.generalEvents.getAll()
+    setEvents(
+      storedEvents.sort(
+        (left, right) =>
+          left.startDate.localeCompare(right.startDate) ||
+          left.endDate.localeCompare(right.endDate),
+      ),
+    )
+  }, [])
+
   useEffect(() => {
     let isCurrent = true
 
     void Promise.all([
       appServices.bookings.getAll(),
+      appServices.generalEvents.getAll(),
       appServices.repositories.clients.getAll(),
       appServices.repositories.pets.getAll(),
       appServices.repositories.areas.getAll(),
@@ -92,6 +115,7 @@ function CalendarScreen({
     ])
       .then(([
         storedBookings,
+        storedEvents,
         storedClients,
         storedPets,
         storedAreas,
@@ -101,6 +125,11 @@ function CalendarScreen({
 
         setBookings(
           storedBookings.sort((left, right) =>
+            left.startDate.localeCompare(right.startDate),
+          ),
+        )
+        setEvents(
+          storedEvents.sort((left, right) =>
             left.startDate.localeCompare(right.startDate),
           ),
         )
@@ -126,11 +155,18 @@ function CalendarScreen({
 
   const effectiveView: BookingView = bookingCreationRequested
     ? { name: 'create', returnTo: 'month' }
-    : view
+    : eventCreationRequested
+      ? { name: 'event-create' }
+      : view
 
   const selectedBooking =
     effectiveView.name === 'detail' || effectiveView.name === 'edit'
       ? bookings.find((booking) => booking.id === effectiveView.bookingId)
+      : undefined
+  const selectedEvent =
+    effectiveView.name === 'event-detail' ||
+    effectiveView.name === 'event-edit'
+      ? events.find((event) => event.id === effectiveView.eventId)
       : undefined
 
   const closeBookingForm = () => {
@@ -139,6 +175,16 @@ function CalendarScreen({
       setView(getReturnView(effectiveView.returnTo))
     }
     if (bookingCreationRequested) onBookingCreationHandled()
+  }
+
+  const closeEventForm = () => {
+    setError(null)
+    if (effectiveView.name === 'event-edit' && selectedEvent !== undefined) {
+      setView({ name: 'event-detail', eventId: selectedEvent.id })
+    } else {
+      setView({ name: 'month' })
+    }
+    if (eventCreationRequested) onEventCreationHandled()
   }
 
   const saveBooking = async (input: NewEntity<Booking>) => {
@@ -165,6 +211,49 @@ function CalendarScreen({
           ? saveError.message
           : 'The booking could not be saved. Please try again.',
       )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const saveEvent = async (input: NewEntity<GeneralEvent>) => {
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      const savedEvent =
+        effectiveView.name === 'event-edit' && selectedEvent !== undefined
+          ? await appServices.generalEvents.update(selectedEvent.id, input)
+          : await appServices.generalEvents.create(input)
+
+      await loadEvents()
+      setView({ name: 'event-detail', eventId: savedEvent.id })
+      if (eventCreationRequested) onEventCreationHandled()
+    } catch (saveError: unknown) {
+      console.error('Failed to save general event', saveError)
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'The event could not be saved. Please try again.',
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const deleteEvent = async (event: GeneralEvent) => {
+    if (!window.confirm('Delete this event? This cannot be undone.')) return
+
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      await appServices.generalEvents.delete(event.id)
+      await loadEvents()
+      setView({ name: 'month' })
+    } catch (deleteError: unknown) {
+      console.error('Failed to delete general event', deleteError)
+      setError('The event could not be deleted. Please try again.')
     } finally {
       setIsSaving(false)
     }
@@ -208,7 +297,51 @@ function CalendarScreen({
   }
 
   if (isLoading) {
-    return <p className="status-message">Loading bookings…</p>
+    return <p className="status-message">Loading calendar…</p>
+  }
+
+  if (
+    effectiveView.name === 'event-create' ||
+    effectiveView.name === 'event-edit'
+  ) {
+    return (
+      <section className="event-screen">
+        {error !== null && <p className="error-message">{error}</p>}
+        <GeneralEventForm
+          key={selectedEvent?.id ?? 'new-event'}
+          event={selectedEvent}
+          areas={areas}
+          isSaving={isSaving}
+          onCancel={closeEventForm}
+          onSubmit={saveEvent}
+        />
+      </section>
+    )
+  }
+
+  if (
+    effectiveView.name === 'event-detail' &&
+    selectedEvent !== undefined
+  ) {
+    return (
+      <GeneralEventDetail
+        event={selectedEvent}
+        area={selectedEvent.areaId === undefined
+          ? undefined
+          : areaById.get(selectedEvent.areaId)}
+        backLabel="Calendar"
+        error={error}
+        isSaving={isSaving}
+        onBack={() => {
+          setError(null)
+          setView({ name: 'month' })
+        }}
+        onEdit={() =>
+          setView({ name: 'event-edit', eventId: selectedEvent.id })
+        }
+        onDelete={() => void deleteEvent(selectedEvent)}
+      />
+    )
   }
 
   if (effectiveView.name === 'create' || effectiveView.name === 'edit') {
@@ -301,6 +434,7 @@ function CalendarScreen({
         <MonthCalendar
           month={displayedMonth}
           bookings={bookings}
+          events={events}
           clients={clients}
           pets={pets}
           areas={areas}
@@ -314,6 +448,9 @@ function CalendarScreen({
           onToday={() => setDisplayedMonth(getCurrentMonth())}
           onOpenBooking={(bookingId) =>
             setView({ name: 'detail', bookingId, returnTo: 'month' })
+          }
+          onOpenEvent={(eventId) =>
+            setView({ name: 'event-detail', eventId })
           }
         />
       </section>

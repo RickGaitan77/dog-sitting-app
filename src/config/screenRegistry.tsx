@@ -8,7 +8,9 @@ import SettingsScreen from '../screens/SettingsScreen'
 
 export type ScreenContext = {
   bookingCreationRequested: boolean
+  eventCreationRequested: boolean
   onBookingCreationHandled: () => void
+  onEventCreationHandled: () => void
 }
 
 type ScreenRenderer = (context: ScreenContext) => ReactNode

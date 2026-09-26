@@ -2,7 +2,6 @@ import type {
   Area,
   Attachment,
   Client,
-  GeneralEvent,
   Meal,
   Pet,
   Service,
@@ -17,6 +16,7 @@ import {
   type IdFactory,
 } from './entityService'
 import { BookingService } from './bookingService'
+import { GeneralEventService } from './generalEventService'
 
 export class AppServices {
   readonly repositories: AppRepositories
@@ -25,7 +25,7 @@ export class AppServices {
   readonly bookings: BookingService
   readonly areas: EntityService<Area>
   readonly services: EntityService<Service>
-  readonly generalEvents: EntityService<GeneralEvent>
+  readonly generalEvents: GeneralEventService
   readonly meals: EntityService<Meal>
   readonly attachments: EntityService<Attachment>
   readonly settings: AppRepositories['settings']
@@ -40,8 +40,8 @@ export class AppServices {
     this.bookings = new BookingService(repositories, idFactory)
     this.areas = new EntityService(repositories.areas, idFactory)
     this.services = new EntityService(repositories.services, idFactory)
-    this.generalEvents = new EntityService(
-      repositories.generalEvents,
+    this.generalEvents = new GeneralEventService(
+      repositories,
       idFactory,
     )
     this.meals = new EntityService(repositories.meals, idFactory)

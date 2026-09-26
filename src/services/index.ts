@@ -8,6 +8,10 @@ export {
   EntityService,
   createEntityId,
 } from './entityService'
+export {
+  GeneralEventService,
+  GeneralEventValidationError,
+} from './generalEventService'
 export type {
   IdFactory,
   NewEntity,

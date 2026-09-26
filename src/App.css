@@ -99,7 +99,8 @@
 
 .clients-screen,
 .booking-screen,
-.agenda-screen {
+.agenda-screen,
+.event-screen {
   width: min(100%, 760px);
   margin: 0 auto;
   padding-bottom: 88px;
@@ -300,6 +301,7 @@
 
 .client-details span,
 .booking-details span,
+.event-details span,
 .pet-details dt {
   color: #7f6570;
   font-size: 0.78rem;
@@ -320,6 +322,17 @@
 }
 
 .booking-details p {
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+.event-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.event-details p {
   margin-top: 4px;
   white-space: pre-wrap;
 }
@@ -582,6 +595,11 @@
   box-shadow: 0 3px 12px rgba(65, 45, 50, 0.06);
 }
 
+.agenda-event-card {
+  border-left-style: dashed;
+  background: #fdf9f2;
+}
+
 .agenda-card-main {
   width: 100%;
   display: grid;
@@ -605,6 +623,18 @@
 .agenda-card-heading strong {
   color: #2f2a2a;
   font-size: 1.03rem;
+}
+
+.event-badge {
+  border: 1px solid #cbbdb6;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: #f4eee9;
+  color: #67595d;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .agenda-date-range {
@@ -805,8 +835,25 @@
   cursor: pointer;
 }
 
+.calendar-event {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 4px 5px;
+  border: 1px dashed var(--event-color);
+  border-left: 4px solid var(--event-color);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--event-color) 10%, #fffaf1);
+  color: #3f3639;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .calendar-booking strong,
-.calendar-booking span {
+.calendar-booking span,
+.calendar-event strong,
+.calendar-event span {
   overflow: hidden;
   font-size: 0.7rem;
   line-height: 1.15;
@@ -818,9 +865,21 @@
   font-weight: 750;
 }
 
+.calendar-event strong {
+  font-weight: 750;
+}
+
 .calendar-booking span {
   color: #63575a;
   font-size: 0.62rem;
+}
+
+.calendar-event span {
+  color: #75686c;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 @media (max-width: 600px) {
@@ -868,11 +927,18 @@
     border-left-width: 3px;
   }
 
-  .calendar-booking strong {
+  .calendar-event {
+    padding: 3px;
+    border-left-width: 3px;
+  }
+
+  .calendar-booking strong,
+  .calendar-event strong {
     font-size: 0.62rem;
   }
 
-  .calendar-booking span {
+  .calendar-booking span,
+  .calendar-event span {
     display: none;
   }
 
@@ -897,6 +963,7 @@
   .form-grid,
   .client-details,
   .booking-details,
+  .event-details,
   .pet-details {
     grid-template-columns: 1fr;
   }

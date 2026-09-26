@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import AgendaList from '../components/agenda/AgendaList'
 import BookingForm from '../components/bookings/BookingForm'
+import GeneralEventDetail from '../components/events/GeneralEventDetail'
+import GeneralEventForm from '../components/events/GeneralEventForm'
 import {
   appServices,
   BOOKING_STATUSES,
@@ -11,6 +13,7 @@ import type {
   Booking,
   BookingStatus,
   Client,
+  GeneralEvent,
   Pet,
   Service,
 } from '../Types'
@@ -19,9 +22,12 @@ type AgendaView =
   | { name: 'list' }
   | { name: 'detail'; bookingId: string }
   | { name: 'edit'; bookingId: string }
+  | { name: 'event-detail'; eventId: string }
+  | { name: 'event-edit'; eventId: string }
 
 function AgendaScreen() {
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [events, setEvents] = useState<GeneralEvent[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [pets, setPets] = useState<Pet[]>([])
   const [areas, setAreas] = useState<Area[]>([])
@@ -53,11 +59,17 @@ function AgendaScreen() {
     setBookings(storedBookings)
   }, [])
 
+  const loadEvents = useCallback(async () => {
+    const storedEvents = await appServices.generalEvents.getAll()
+    setEvents(storedEvents)
+  }, [])
+
   useEffect(() => {
     let isCurrent = true
 
     void Promise.all([
       appServices.bookings.getAll(),
+      appServices.generalEvents.getAll(),
       appServices.repositories.clients.getAll(),
       appServices.repositories.pets.getAll(),
       appServices.repositories.areas.getAll(),
@@ -65,6 +77,7 @@ function AgendaScreen() {
     ])
       .then(([
         storedBookings,
+        storedEvents,
         storedClients,
         storedPets,
         storedAreas,
@@ -73,6 +86,7 @@ function AgendaScreen() {
         if (!isCurrent) return
 
         setBookings(storedBookings)
+        setEvents(storedEvents)
         setClients(storedClients)
         setPets(storedPets)
         setAreas(storedAreas)
@@ -97,6 +111,10 @@ function AgendaScreen() {
     view.name === 'detail' || view.name === 'edit'
       ? bookings.find((booking) => booking.id === view.bookingId)
       : undefined
+  const selectedEvent =
+    view.name === 'event-detail' || view.name === 'event-edit'
+      ? events.find((event) => event.id === view.eventId)
+      : undefined
 
   const saveBooking = async (input: NewEntity<Booking>) => {
     if (view.name !== 'edit' || selectedBooking === undefined) return
@@ -118,6 +136,49 @@ function AgendaScreen() {
           ? saveError.message
           : 'The booking could not be saved. Please try again.',
       )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const saveEvent = async (input: NewEntity<GeneralEvent>) => {
+    if (view.name !== 'event-edit' || selectedEvent === undefined) return
+
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      const savedEvent = await appServices.generalEvents.update(
+        selectedEvent.id,
+        input,
+      )
+      await loadEvents()
+      setView({ name: 'event-detail', eventId: savedEvent.id })
+    } catch (saveError: unknown) {
+      console.error('Failed to save general event', saveError)
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'The event could not be saved. Please try again.',
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const deleteEvent = async (event: GeneralEvent) => {
+    if (!window.confirm('Delete this event? This cannot be undone.')) return
+
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      await appServices.generalEvents.delete(event.id)
+      await loadEvents()
+      setView({ name: 'list' })
+    } catch (deleteError: unknown) {
+      console.error('Failed to delete general event', deleteError)
+      setError('The event could not be deleted. Please try again.')
     } finally {
       setIsSaving(false)
     }
@@ -162,6 +223,47 @@ function AgendaScreen() {
 
   if (isLoading) {
     return <p className="status-message">Loading agenda…</p>
+  }
+
+  if (view.name === 'event-edit' && selectedEvent !== undefined) {
+    return (
+      <section className="event-screen">
+        {error !== null && <p className="error-message">{error}</p>}
+        <GeneralEventForm
+          key={selectedEvent.id}
+          event={selectedEvent}
+          areas={areas}
+          isSaving={isSaving}
+          onCancel={() => {
+            setError(null)
+            setView({ name: 'event-detail', eventId: selectedEvent.id })
+          }}
+          onSubmit={saveEvent}
+        />
+      </section>
+    )
+  }
+
+  if (view.name === 'event-detail' && selectedEvent !== undefined) {
+    return (
+      <GeneralEventDetail
+        event={selectedEvent}
+        area={selectedEvent.areaId === undefined
+          ? undefined
+          : areaById.get(selectedEvent.areaId)}
+        backLabel="Agenda"
+        error={error}
+        isSaving={isSaving}
+        onBack={() => {
+          setError(null)
+          setView({ name: 'list' })
+        }}
+        onEdit={() =>
+          setView({ name: 'event-edit', eventId: selectedEvent.id })
+        }
+        onDelete={() => void deleteEvent(selectedEvent)}
+      />
+    )
   }
 
   if (view.name === 'edit' && selectedBooking !== undefined) {
@@ -253,12 +355,16 @@ function AgendaScreen() {
 
       <AgendaList
         bookings={bookings}
+        events={events}
         clients={clients}
         pets={pets}
         areas={areas}
         services={services}
         onOpenBooking={(bookingId) =>
           setView({ name: 'detail', bookingId })
+        }
+        onOpenEvent={(eventId) =>
+          setView({ name: 'event-detail', eventId })
         }
       />
     </section>

@@ -3,6 +3,7 @@ import type {
   Area,
   Booking,
   Client,
+  GeneralEvent,
   Pet,
   Service,
 } from '../../Types'
@@ -17,11 +18,13 @@ type MonthCalendarProps = {
   month: CalendarMonth
   bookings: Booking[]
   clients: Client[]
+  events: GeneralEvent[]
   pets: Pet[]
   areas: Area[]
   services: Service[]
   onNextMonth: () => void
   onOpenBooking: (bookingId: string) => void
+  onOpenEvent: (eventId: string) => void
   onPreviousMonth: () => void
   onToday: () => void
 }
@@ -32,11 +35,13 @@ function MonthCalendar({
   month,
   bookings,
   clients,
+  events,
   pets,
   areas,
   services,
   onNextMonth,
   onOpenBooking,
+  onOpenEvent,
   onPreviousMonth,
   onToday,
 }: MonthCalendarProps) {
@@ -62,11 +67,17 @@ function MonthCalendar({
     [bookings],
   )
   const monthRange = getMonthDateRange(month)
-  const hasBookingsThisMonth = activeBookings.some(
-    (booking) =>
-      booking.startDate <= monthRange.endDate &&
-      booking.endDate >= monthRange.startDate,
-  )
+  const hasItemsThisMonth =
+    activeBookings.some(
+      (booking) =>
+        booking.startDate <= monthRange.endDate &&
+        booking.endDate >= monthRange.startDate,
+    ) ||
+    events.some(
+      (event) =>
+        event.startDate <= monthRange.endDate &&
+        event.endDate >= monthRange.startDate,
+    )
 
   return (
     <div className="month-calendar">
@@ -95,8 +106,8 @@ function MonthCalendar({
         </button>
       </div>
 
-      {!hasBookingsThisMonth && (
-        <p className="calendar-empty-note">No active bookings this month.</p>
+      {!hasItemsThisMonth && (
+        <p className="calendar-empty-note">No bookings or events this month.</p>
       )}
 
       <div className="calendar-grid" role="grid" aria-label={getMonthLabel(month)}>
@@ -110,6 +121,10 @@ function MonthCalendar({
           const dayBookings = activeBookings.filter(
             (booking) =>
               booking.startDate <= day.date && booking.endDate >= day.date,
+          )
+          const dayEvents = events.filter(
+            (event) =>
+              event.startDate <= day.date && event.endDate >= day.date,
           )
 
           return (
@@ -155,6 +170,29 @@ function MonthCalendar({
                       {(serviceSummary || petSummary) && (
                         <span>{serviceSummary || petSummary}</span>
                       )}
+                    </button>
+                  )
+                })}
+                {dayEvents.map((event) => {
+                  const areaColor = event.areaId === undefined
+                    ? '#81767b'
+                    : areaById.get(event.areaId)?.color ?? '#81767b'
+                  const style = {
+                    '--event-color': areaColor,
+                  } as CSSProperties
+
+                  return (
+                    <button
+                      className="calendar-event"
+                      type="button"
+                      style={style}
+                      title={`Event: ${event.title}`}
+                      aria-label={`${event.title} event on ${day.date}`}
+                      onClick={() => onOpenEvent(event.id)}
+                      key={event.id}
+                    >
+                      <strong>{event.title}</strong>
+                      <span>Event</span>
                     </button>
                   )
                 })}
