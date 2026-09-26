@@ -13,7 +13,8 @@ import type {
 import {
   DATABASE_NAME,
   DATABASE_VERSION,
-  STORES,
+  STORE_SCHEMA,
+  STORE_SCHEMA_VERSION_1,
 } from './schema'
 
 export class DogSittingDatabase extends Dexie {
@@ -27,23 +28,11 @@ export class DogSittingDatabase extends Dexie {
   attachments!: Table<Attachment, string>
   settings!: Table<AppSettings, string>
 
-  constructor() {
-    super(DATABASE_NAME)
+  constructor(databaseName = DATABASE_NAME) {
+    super(databaseName)
 
-    this.version(DATABASE_VERSION).stores({
-      [STORES.clients]: 'id, name, areaId, archived',
-      [STORES.pets]: 'id, clientId, name, archived',
-      [STORES.bookings]:
-        'id, clientId, startDate, endDate, areaId, status',
-      [STORES.areas]: 'id, name, sortOrder, archived',
-      [STORES.services]: 'id, name, sortOrder, archived',
-      [STORES.generalEvents]:
-        'id, title, startDate, endDate, areaId',
-      [STORES.meals]: 'id, date, prepDate, prepCompleted',
-      [STORES.attachments]:
-        'id, ownerType, ownerId, createdAt',
-      [STORES.settings]: '',
-    })
+    this.version(1).stores(STORE_SCHEMA_VERSION_1)
+    this.version(DATABASE_VERSION).stores(STORE_SCHEMA)
   }
 }
 
