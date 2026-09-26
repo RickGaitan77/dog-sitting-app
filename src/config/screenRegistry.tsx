@@ -6,10 +6,17 @@ import ClientsScreen from '../screens/ClientsScreen'
 import MealsScreen from '../screens/MealsScreen'
 import SettingsScreen from '../screens/SettingsScreen'
 
-export const screenRegistry: Record<AppScreen, ReactNode> = {
-  Calendar: <CalendarScreen />,
-  Agenda: <AgendaScreen />,
-  Clients: <ClientsScreen />,
-  Meals: <MealsScreen />,
-  Settings: <SettingsScreen />,
+export type ScreenContext = {
+  bookingCreationRequested: boolean
+  onBookingCreationHandled: () => void
+}
+
+type ScreenRenderer = (context: ScreenContext) => ReactNode
+
+export const screenRegistry: Record<AppScreen, ScreenRenderer> = {
+  Calendar: (context) => <CalendarScreen {...context} />,
+  Agenda: () => <AgendaScreen />,
+  Clients: () => <ClientsScreen />,
+  Meals: () => <MealsScreen />,
+  Settings: () => <SettingsScreen />,
 }

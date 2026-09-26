@@ -1,17 +1,19 @@
 type FloatingAddButtonProps = {
   isOpen: boolean
+  onAddBooking: () => void
   onToggle: () => void
 }
 
 function FloatingAddButton({
   isOpen,
+  onAddBooking,
   onToggle,
 }: FloatingAddButtonProps) {
   return (
     <>
       {isOpen && (
         <div className="add-menu">
-          <button>Add Booking</button>
+          <button onClick={onAddBooking}>Add Booking</button>
           <button>Add Event</button>
           <button>Add Meal</button>
         </div>

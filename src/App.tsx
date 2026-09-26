@@ -9,6 +9,8 @@ import type { AppScreen } from './Types/AppScreen'
 function App() {
   const [activeTab, setActiveTab] = useState<AppScreen>('Calendar')
   const [showAddMenu, setShowAddMenu] = useState(false)
+  const [bookingCreationRequested, setBookingCreationRequested] =
+    useState(false)
 
   const changeTab = (tab: AppScreen) => {
     setActiveTab(tab)
@@ -24,7 +26,11 @@ function App() {
       />
 
       <div className="app-content">
-        {screenRegistry[activeTab]}
+        {screenRegistry[activeTab]({
+          bookingCreationRequested,
+          onBookingCreationHandled: () =>
+            setBookingCreationRequested(false),
+        })}
       </div>
 
       {activeTab !== 'Settings' && (
@@ -36,6 +42,11 @@ function App() {
 
           <FloatingAddButton
             isOpen={showAddMenu}
+            onAddBooking={() => {
+              setActiveTab('Calendar')
+              setShowAddMenu(false)
+              setBookingCreationRequested(true)
+            }}
             onToggle={() =>
               setShowAddMenu((current) => !current)
             }
