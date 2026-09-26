@@ -2,6 +2,7 @@ type FloatingAddButtonProps = {
   isOpen: boolean
   onAddBooking: () => void
   onAddEvent: () => void
+  onAddMeal: () => void
   onToggle: () => void
 }
 
@@ -9,6 +10,7 @@ function FloatingAddButton({
   isOpen,
   onAddBooking,
   onAddEvent,
+  onAddMeal,
   onToggle,
 }: FloatingAddButtonProps) {
   return (
@@ -17,7 +19,7 @@ function FloatingAddButton({
         <div className="add-menu">
           <button onClick={onAddBooking}>Add Booking</button>
           <button onClick={onAddEvent}>Add Event</button>
-          <button>Add Meal</button>
+          <button onClick={onAddMeal}>Add Meal</button>
         </div>
       )}
 

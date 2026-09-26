@@ -12,6 +12,10 @@ export {
   GeneralEventService,
   GeneralEventValidationError,
 } from './generalEventService'
+export {
+  MealService,
+  MealValidationError,
+} from './mealService'
 export type {
   IdFactory,
   NewEntity,
