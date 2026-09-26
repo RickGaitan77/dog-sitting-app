@@ -98,7 +98,8 @@
 }
 
 .clients-screen,
-.booking-screen {
+.booking-screen,
+.agenda-screen {
   width: min(100%, 760px);
   margin: 0 auto;
   padding-bottom: 88px;
@@ -534,6 +535,119 @@
   text-transform: none;
 }
 
+.agenda-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.agenda-heading h2,
+.agenda-group h3,
+.agenda-empty-state h3 {
+  margin: 0;
+}
+
+.agenda-heading > p {
+  margin: 0 0 2px;
+  color: #796d70;
+  font-size: 0.88rem;
+}
+
+.agenda-groups {
+  display: grid;
+  gap: 24px;
+}
+
+.agenda-group h3 {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddcec7;
+  color: #5c494f;
+  font-size: 0.92rem;
+}
+
+.agenda-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.agenda-card {
+  overflow: hidden;
+  border: 1px solid #eadfd8;
+  border-left: 5px solid var(--agenda-area-color);
+  border-radius: 12px;
+  background: #fffaf7;
+  box-shadow: 0 3px 12px rgba(65, 45, 50, 0.06);
+}
+
+.agenda-card-main {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  padding: 14px 15px;
+  border: 0;
+  background: transparent;
+  color: #554a4d;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agenda-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.agenda-card-heading strong {
+  color: #2f2a2a;
+  font-size: 1.03rem;
+}
+
+.agenda-date-range {
+  color: #5e5054;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.agenda-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+  color: #6f6265;
+  font-size: 0.84rem;
+}
+
+.agenda-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6f6265;
+  font-size: 0.82rem;
+}
+
+.agenda-area-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--agenda-area-color);
+}
+
+.agenda-window-note {
+  margin: -8px 0 0;
+  color: #8b7d80;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.agenda-empty-state {
+  margin-top: 0;
+}
+
 .calendar-screen {
   width: 100%;
   padding-bottom: 88px;
@@ -710,6 +824,12 @@
 }
 
 @media (max-width: 600px) {
+  .agenda-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
   .calendar-screen {
     width: calc(100% + 16px);
     margin-inline: -8px;
