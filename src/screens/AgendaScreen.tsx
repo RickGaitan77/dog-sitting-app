@@ -325,6 +325,9 @@ function AgendaScreen() {
           <div><span>Dates</span><p>{selectedBooking.startDate} to {selectedBooking.endDate}</p></div>
           <div><span>Area</span><p>{area?.name ?? 'Unknown area'}</p></div>
           <div><span>Services</span><p>{bookingServices.map((service) => service?.name ?? 'Unknown service').join(', ')}</p></div>
+          {selectedBooking.recurrenceSeriesId !== undefined && (
+            <div><span>Recurrence</span><p>Weekly occurrence</p></div>
+          )}
           <label className="status-editor">
             Status
             <select

@@ -11,6 +11,7 @@ import {
   appServices,
   BOOKING_STATUSES,
   type NewEntity,
+  type WeeklyRecurrenceInput,
 } from '../services'
 import type {
   Area,
@@ -187,15 +188,19 @@ function CalendarScreen({
     if (eventCreationRequested) onEventCreationHandled()
   }
 
-  const saveBooking = async (input: NewEntity<Booking>) => {
+  const saveBooking = async (
+    input: NewEntity<Booking>,
+    recurrence?: WeeklyRecurrenceInput,
+  ) => {
     setIsSaving(true)
     setError(null)
 
     try {
-      const savedBooking =
-        effectiveView.name === 'edit' && selectedBooking !== undefined
-          ? await appServices.bookings.update(selectedBooking.id, input)
-          : await appServices.bookings.create(input)
+      const savedBooking = effectiveView.name === 'edit' && selectedBooking !== undefined
+        ? await appServices.bookings.update(selectedBooking.id, input)
+        : recurrence === undefined
+          ? await appServices.bookings.create(input)
+          : (await appServices.bookings.createWeekly(input, recurrence))[0]
 
       await loadBookings()
       const returnTo =
@@ -393,6 +398,9 @@ function CalendarScreen({
           <div><span>Dates</span><p>{selectedBooking.startDate} to {selectedBooking.endDate}</p></div>
           <div><span>Area</span><p>{area?.name ?? 'Unknown area'}</p></div>
           <div><span>Services</span><p>{bookingServices.map((service) => service?.name ?? 'Unknown service').join(', ')}</p></div>
+          {selectedBooking.recurrenceSeriesId !== undefined && (
+            <div><span>Recurrence</span><p>Weekly occurrence</p></div>
+          )}
           <label className="status-editor">
             Status
             <select

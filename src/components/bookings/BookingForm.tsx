@@ -10,6 +10,7 @@ import type {
 import {
   BOOKING_STATUSES,
   type NewEntity,
+  type WeeklyRecurrenceInput,
 } from '../../services'
 
 type BookingFormProps = {
@@ -20,7 +21,10 @@ type BookingFormProps = {
   services: Service[]
   isSaving: boolean
   onCancel: () => void
-  onSubmit: (booking: NewEntity<Booking>) => Promise<void>
+  onSubmit: (
+    booking: NewEntity<Booking>,
+    recurrence?: WeeklyRecurrenceInput,
+  ) => Promise<void>
 }
 
 type BookingFormValues = {
@@ -32,7 +36,20 @@ type BookingFormValues = {
   serviceIds: string[]
   status: BookingStatus
   notes: string
+  recurrenceMode: 'one-time' | 'weekly'
+  recurrenceWeekdays: number[]
+  recurrenceEndDate: string
 }
+
+const WEEKDAYS = [
+  { value: 0, label: 'Sunday' },
+  { value: 1, label: 'Monday' },
+  { value: 2, label: 'Tuesday' },
+  { value: 3, label: 'Wednesday' },
+  { value: 4, label: 'Thursday' },
+  { value: 5, label: 'Friday' },
+  { value: 6, label: 'Saturday' },
+] as const
 
 function toggleSelection(values: string[], id: string): string[] {
   return values.includes(id)
@@ -60,6 +77,9 @@ function BookingForm({
     serviceIds: booking?.serviceIds ?? [],
     status: booking?.status ?? 'Tentative',
     notes: booking?.notes ?? '',
+    recurrenceMode: 'one-time',
+    recurrenceWeekdays: [],
+    recurrenceEndDate: '',
   })
 
   const clientOptions = useMemo(
@@ -119,6 +139,31 @@ function BookingForm({
     if (!BOOKING_STATUSES.includes(values.status)) {
       validationErrors.push('Select a valid status.')
     }
+    if (
+      booking === undefined &&
+      values.recurrenceMode === 'weekly' &&
+      values.recurrenceWeekdays.length === 0
+    ) {
+      validationErrors.push('Select at least one recurrence weekday.')
+    }
+    if (
+      booking === undefined &&
+      values.recurrenceMode === 'weekly' &&
+      values.recurrenceEndDate === ''
+    ) {
+      validationErrors.push('Enter a recurrence end date.')
+    }
+    if (
+      booking === undefined &&
+      values.recurrenceMode === 'weekly' &&
+      values.recurrenceEndDate !== '' &&
+      values.startDate !== '' &&
+      values.recurrenceEndDate < values.startDate
+    ) {
+      validationErrors.push(
+        'Recurrence end date cannot be before start date.',
+      )
+    }
 
     return validationErrors
   }
@@ -133,7 +178,7 @@ function BookingForm({
     }
 
     setErrors([])
-    void onSubmit({
+    const bookingInput: NewEntity<Booking> = {
       clientId: values.clientId,
       petIds: values.petIds,
       startDate: values.startDate,
@@ -142,7 +187,17 @@ function BookingForm({
       serviceIds: values.serviceIds,
       status: values.status,
       notes: values.notes.trim() || undefined,
-    })
+    }
+    const recurrence: WeeklyRecurrenceInput | undefined =
+      booking === undefined && values.recurrenceMode === 'weekly'
+        ? {
+            frequency: 'weekly',
+            weekdays: values.recurrenceWeekdays,
+            endDate: values.recurrenceEndDate,
+          }
+        : undefined
+
+    void onSubmit(bookingInput, recurrence)
   }
 
   return (
@@ -297,6 +352,83 @@ function BookingForm({
             </label>
           ))}
         </fieldset>
+
+        {booking === undefined && (
+          <fieldset className="choice-group recurrence-group full-width-field">
+            <legend>Recurrence</legend>
+            <label>
+              <input
+                type="radio"
+                name="recurrence-mode"
+                checked={values.recurrenceMode === 'one-time'}
+                onChange={() => setValues((current) => ({
+                  ...current,
+                  recurrenceMode: 'one-time',
+                }))}
+              />
+              One-time
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="recurrence-mode"
+                checked={values.recurrenceMode === 'weekly'}
+                onChange={() => setValues((current) => ({
+                  ...current,
+                  recurrenceMode: 'weekly',
+                }))}
+              />
+              Weekly
+            </label>
+
+            {values.recurrenceMode === 'weekly' && (
+              <div className="recurrence-options">
+                <fieldset className="weekday-choices">
+                  <legend>Repeat on *</legend>
+                  {WEEKDAYS.map((weekday) => (
+                    <label key={weekday.value}>
+                      <input
+                        type="checkbox"
+                        checked={values.recurrenceWeekdays.includes(weekday.value)}
+                        onChange={() => {
+                          setValues((current) => ({
+                            ...current,
+                            recurrenceWeekdays: current.recurrenceWeekdays.includes(weekday.value)
+                              ? current.recurrenceWeekdays.filter((value) => value !== weekday.value)
+                              : [...current.recurrenceWeekdays, weekday.value],
+                          }))
+                          setErrors([])
+                        }}
+                      />
+                      {weekday.label}
+                    </label>
+                  ))}
+                </fieldset>
+
+                <label className="recurrence-end-field">
+                  Recurrence end date *
+                  <input
+                    type="date"
+                    value={values.recurrenceEndDate}
+                    onChange={(event) => {
+                      setValues((current) => ({
+                        ...current,
+                        recurrenceEndDate: event.target.value,
+                      }))
+                      setErrors([])
+                    }}
+                  />
+                </label>
+              </div>
+            )}
+          </fieldset>
+        )}
+
+        {booking?.recurrenceSeriesId !== undefined && (
+          <p className="recurrence-edit-note full-width-field">
+            This is one recurring occurrence. Changes apply only to this booking.
+          </p>
+        )}
 
         <label className="full-width-field">
           Notes

@@ -14,4 +14,6 @@ export type Booking = {
   serviceIds: string[]
   status: BookingStatus
   notes?: string
+  recurrenceSeriesId?: string
+  recurrenceInstanceDate?: string
 }

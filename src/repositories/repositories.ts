@@ -114,6 +114,25 @@ export class PetRepository extends EntityRepository<Pet> {
 }
 
 export class BookingRepository extends EntityRepository<Booking> {
+  async addMissing(bookings: Booking[]): Promise<Booking[]> {
+    return this.table.db.transaction('rw', this.table, async () => {
+      const existingBookings = await this.table.bulkGet(
+        bookings.map((booking) => booking.id),
+      )
+      const missingBookings = bookings.filter(
+        (_booking, index) => existingBookings[index] === undefined,
+      )
+
+      if (missingBookings.length > 0) {
+        await this.table.bulkAdd(missingBookings)
+      }
+
+      return bookings.map(
+        (booking, index) => existingBookings[index] ?? booking,
+      )
+    })
+  }
+
   async getOverlappingDateRange(
     startDate: string,
     endDate: string,

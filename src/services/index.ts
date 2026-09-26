@@ -11,6 +11,7 @@ export {
   BookingService,
   BookingValidationError,
 } from './bookingService'
+export type { WeeklyRecurrenceInput } from './bookingService'
 export {
   EntityService,
   createEntityId,

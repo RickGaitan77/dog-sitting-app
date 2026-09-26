@@ -16,6 +16,66 @@ export const BOOKING_STATUSES: readonly BookingStatus[] = [
   'Cancelled',
 ]
 
+export type WeeklyRecurrenceInput = {
+  frequency: 'weekly'
+  weekdays: number[]
+  endDate: string
+}
+
+function parseDateOnly(date: string): Date {
+  return new Date(`${date}T00:00:00.000Z`)
+}
+
+function toDateString(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
+function addDays(date: string, days: number): string {
+  const shiftedDate = parseDateOnly(date)
+  shiftedDate.setUTCDate(shiftedDate.getUTCDate() + days)
+  return toDateString(shiftedDate)
+}
+
+function differenceInDays(startDate: string, endDate: string): number {
+  return Math.round(
+    (parseDateOnly(endDate).getTime() - parseDateOnly(startDate).getTime()) /
+      86_400_000,
+  )
+}
+
+function stableHash(value: string): string {
+  let first = 0x811c9dc5
+  let second = 0x9e3779b9
+
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index)
+    first = Math.imul(first ^ code, 0x01000193)
+    second = Math.imul(second ^ code, 0x85ebca6b)
+  }
+
+  return `${(first >>> 0).toString(16).padStart(8, '0')}${(second >>> 0).toString(16).padStart(8, '0')}`
+}
+
+function createSeriesId(
+  booking: NewEntity<Booking>,
+  recurrence: WeeklyRecurrenceInput,
+): string {
+  const signature = JSON.stringify({
+    clientId: booking.clientId,
+    petIds: [...booking.petIds].sort(),
+    startDate: booking.startDate,
+    endDate: booking.endDate,
+    areaId: booking.areaId,
+    serviceIds: [...booking.serviceIds].sort(),
+    status: booking.status,
+    notes: booking.notes ?? null,
+    weekdays: [...recurrence.weekdays].sort(),
+    recurrenceEndDate: recurrence.endDate,
+  })
+
+  return `weekly-${stableHash(signature)}`
+}
+
 export class BookingValidationError extends Error {
   constructor(message: string) {
     super(message)
@@ -50,6 +110,67 @@ export class BookingService {
       ...input,
       id: this.idFactory(),
     })
+  }
+
+  async createWeekly(
+    input: NewEntity<Booking>,
+    recurrence: WeeklyRecurrenceInput,
+  ): Promise<Booking[]> {
+    await this.validate(input)
+
+    const weekdays = Array.from(new Set(recurrence.weekdays)).sort()
+
+    if (
+      weekdays.length === 0 ||
+      weekdays.some(
+        (weekday) => !Number.isInteger(weekday) || weekday < 0 || weekday > 6,
+      )
+    ) {
+      throw new BookingValidationError(
+        'Select at least one weekday for weekly recurrence.',
+      )
+    }
+
+    if (recurrence.endDate === '') {
+      throw new BookingValidationError('A recurrence end date is required.')
+    }
+
+    if (recurrence.endDate < input.startDate) {
+      throw new BookingValidationError(
+        'The recurrence end date cannot be before the booking start date.',
+      )
+    }
+
+    const durationDays = differenceInDays(input.startDate, input.endDate)
+    const seriesId = createSeriesId(input, { ...recurrence, weekdays })
+    const instances: Booking[] = []
+
+    for (
+      let occurrenceDate = input.startDate;
+      occurrenceDate <= recurrence.endDate;
+      occurrenceDate = addDays(occurrenceDate, 1)
+    ) {
+      if (!weekdays.includes(parseDateOnly(occurrenceDate).getUTCDay())) {
+        continue
+      }
+
+      instances.push({
+        ...input,
+        id: `${seriesId}:${occurrenceDate}`,
+        startDate: occurrenceDate,
+        endDate: addDays(occurrenceDate, durationDays),
+        recurrenceSeriesId: seriesId,
+        recurrenceInstanceDate: occurrenceDate,
+      })
+    }
+
+    if (instances.length === 0) {
+      throw new BookingValidationError(
+        'The recurrence does not produce any bookings in the selected date range.',
+      )
+    }
+
+    return this.repositories.bookings.addMissing(instances)
   }
 
   async update(
