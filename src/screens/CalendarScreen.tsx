@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import BookingForm from '../components/bookings/BookingForm'
+import MonthCalendar from '../components/calendar/MonthCalendar'
+import {
+  getCurrentMonth,
+  moveMonth,
+} from '../components/calendar/calendarDates'
 import {
   appServices,
   BOOKING_STATUSES,
@@ -20,10 +25,17 @@ type CalendarScreenProps = {
 }
 
 type BookingView =
-  | { name: 'list' }
-  | { name: 'create' }
-  | { name: 'detail'; bookingId: string }
-  | { name: 'edit'; bookingId: string }
+  | { name: 'month' }
+  | { name: 'manage' }
+  | { name: 'create'; returnTo: BookingReturnView }
+  | { name: 'detail'; bookingId: string; returnTo: BookingReturnView }
+  | { name: 'edit'; bookingId: string; returnTo: BookingReturnView }
+
+type BookingReturnView = 'month' | 'manage'
+
+function getReturnView(name: BookingReturnView): BookingView {
+  return name === 'month' ? { name: 'month' } : { name: 'manage' }
+}
 
 function CalendarScreen({
   bookingCreationRequested,
@@ -34,7 +46,8 @@ function CalendarScreen({
   const [pets, setPets] = useState<Pet[]>([])
   const [areas, setAreas] = useState<Area[]>([])
   const [services, setServices] = useState<Service[]>([])
-  const [view, setView] = useState<BookingView>({ name: 'list' })
+  const [view, setView] = useState<BookingView>({ name: 'month' })
+  const [displayedMonth, setDisplayedMonth] = useState(getCurrentMonth)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -112,7 +125,7 @@ function CalendarScreen({
   }, [])
 
   const effectiveView: BookingView = bookingCreationRequested
-    ? { name: 'create' }
+    ? { name: 'create', returnTo: 'month' }
     : view
 
   const selectedBooking =
@@ -122,7 +135,9 @@ function CalendarScreen({
 
   const closeBookingForm = () => {
     setError(null)
-    setView({ name: 'list' })
+    if (effectiveView.name === 'create' || effectiveView.name === 'edit') {
+      setView(getReturnView(effectiveView.returnTo))
+    }
     if (bookingCreationRequested) onBookingCreationHandled()
   }
 
@@ -137,7 +152,11 @@ function CalendarScreen({
           : await appServices.bookings.create(input)
 
       await loadBookings()
-      setView({ name: 'detail', bookingId: savedBooking.id })
+      const returnTo =
+        effectiveView.name === 'create' || effectiveView.name === 'edit'
+          ? effectiveView.returnTo
+          : 'month'
+      setView({ name: 'detail', bookingId: savedBooking.id, returnTo })
       if (bookingCreationRequested) onBookingCreationHandled()
     } catch (saveError: unknown) {
       console.error('Failed to save booking', saveError)
@@ -216,17 +235,19 @@ function CalendarScreen({
     const area = areaById.get(selectedBooking.areaId)
     const bookingPets = selectedBooking.petIds.map((id) => petById.get(id))
     const bookingServices = selectedBooking.serviceIds.map((id) => serviceById.get(id))
+    const backLabel =
+      effectiveView.returnTo === 'month' ? 'Calendar' : 'All bookings'
 
     return (
       <section className="booking-screen">
         <div className="view-heading">
           <div>
-            <button className="text-button back-button" type="button" onClick={() => setView({ name: 'list' })}>← All bookings</button>
+            <button className="text-button back-button" type="button" onClick={() => setView(getReturnView(effectiveView.returnTo))}>← {backLabel}</button>
             <p className="eyebrow">Booking</p>
             <h2>{client?.name ?? 'Unknown client'}</h2>
           </div>
           <div className="button-row">
-            <button className="secondary-button" type="button" onClick={() => setView({ name: 'edit', bookingId: selectedBooking.id })}>Edit</button>
+            <button className="secondary-button" type="button" onClick={() => setView({ name: 'edit', bookingId: selectedBooking.id, returnTo: effectiveView.returnTo })}>Edit</button>
             <button className="danger-button" type="button" disabled={isSaving || selectedBooking.status === 'Cancelled'} onClick={() => void cancelBooking(selectedBooking)}>Cancel booking</button>
           </div>
         </div>
@@ -255,6 +276,50 @@ function CalendarScreen({
     )
   }
 
+  if (effectiveView.name === 'month') {
+    return (
+      <section className="calendar-screen">
+        <div className="calendar-actions">
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={() => setView({ name: 'manage' })}
+          >
+            Manage bookings
+          </button>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => setView({ name: 'create', returnTo: 'month' })}
+          >
+            Add booking
+          </button>
+        </div>
+
+        {error !== null && <p className="error-message">{error}</p>}
+
+        <MonthCalendar
+          month={displayedMonth}
+          bookings={bookings}
+          clients={clients}
+          pets={pets}
+          areas={areas}
+          services={services}
+          onPreviousMonth={() =>
+            setDisplayedMonth((current) => moveMonth(current, -1))
+          }
+          onNextMonth={() =>
+            setDisplayedMonth((current) => moveMonth(current, 1))
+          }
+          onToday={() => setDisplayedMonth(getCurrentMonth())}
+          onOpenBooking={(bookingId) =>
+            setView({ name: 'detail', bookingId, returnTo: 'month' })
+          }
+        />
+      </section>
+    )
+  }
+
   return (
     <section className="booking-screen">
       <div className="view-heading">
@@ -262,7 +327,10 @@ function CalendarScreen({
           <p className="eyebrow">Temporary management view</p>
           <h2>Bookings</h2>
         </div>
-        <button className="primary-button" type="button" onClick={() => setView({ name: 'create' })}>Add booking</button>
+        <div className="button-row">
+          <button className="secondary-button" type="button" onClick={() => setView({ name: 'month' })}>Calendar</button>
+          <button className="primary-button" type="button" onClick={() => setView({ name: 'create', returnTo: 'manage' })}>Add booking</button>
+        </div>
       </div>
 
       {error !== null && <p className="error-message">{error}</p>}
@@ -271,7 +339,7 @@ function CalendarScreen({
         <div className="empty-state">
           <h3>No bookings</h3>
           <p>Create a booking to test scheduling relationships.</p>
-          <button className="primary-button" type="button" onClick={() => setView({ name: 'create' })}>Add booking</button>
+          <button className="primary-button" type="button" onClick={() => setView({ name: 'create', returnTo: 'manage' })}>Add booking</button>
         </div>
       )}
 
@@ -284,7 +352,7 @@ function CalendarScreen({
 
             return (
               <article className="booking-card" key={booking.id}>
-                <button className="booking-card-main" type="button" onClick={() => setView({ name: 'detail', bookingId: booking.id })}>
+                <button className="booking-card-main" type="button" onClick={() => setView({ name: 'detail', bookingId: booking.id, returnTo: 'manage' })}>
                   <span className="booking-card-heading-row">
                     <strong>{client?.name ?? 'Unknown client'}</strong>
                     <span className={`status-badge status-${booking.status.toLowerCase()}`}>{booking.status}</span>
