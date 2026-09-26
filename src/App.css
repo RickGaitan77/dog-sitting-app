@@ -830,6 +830,192 @@
   margin-top: 20px;
 }
 
+.attachment-section {
+  margin-top: 24px;
+}
+
+.pet-card .attachment-section {
+  margin-top: 20px;
+  border-top: 1px solid #eadfd8;
+  padding-top: 18px;
+}
+
+.attachment-section-heading {
+  margin-top: 0;
+}
+
+.attachment-form {
+  display: grid;
+  gap: 13px;
+  border: 1px solid #eadfd8;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fffaf7;
+}
+
+.attachment-form label {
+  display: grid;
+  gap: 6px;
+  color: #54494c;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.attachment-form input,
+.attachment-form textarea {
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #d9c9c1;
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: white;
+  color: #2f2a2a;
+  font: inherit;
+  font-weight: 400;
+}
+
+.attachment-form textarea {
+  resize: vertical;
+}
+
+.attachment-file-help {
+  margin: -4px 0 0;
+  color: #796d70;
+  font-size: 0.78rem;
+}
+
+.attachment-form .form-actions {
+  margin-top: 0;
+}
+
+.attachment-empty-state {
+  margin-top: 0;
+}
+
+.attachment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.attachment-card {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #eadfd8;
+  border-radius: 12px;
+  background: #fffaf7;
+}
+
+.attachment-card:not(:has(.attachment-thumbnail-button)) {
+  grid-template-columns: 1fr;
+}
+
+.attachment-thumbnail-button {
+  min-height: 108px;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid #eadfd8;
+  background: #f1e7e2;
+  cursor: zoom-in;
+}
+
+.attachment-thumbnail {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.attachment-card-body {
+  min-width: 0;
+  padding: 12px;
+}
+
+.attachment-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.attachment-card-heading strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.attachment-card-heading .text-button {
+  flex: 0 0 auto;
+  margin: -5px -5px 0 0;
+}
+
+.attachment-meta,
+.attachment-notes,
+.attachment-loading {
+  margin: 5px 0 0;
+  color: #74676a;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.attachment-notes {
+  color: #4f4548;
+  white-space: pre-wrap;
+}
+
+.attachment-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 9px;
+}
+
+.attachment-links a {
+  color: #8c3d5e;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.attachment-preview-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(36, 28, 31, 0.72);
+}
+
+.attachment-preview-dialog {
+  width: min(100%, 760px);
+  max-height: calc(100vh - 36px);
+  display: grid;
+  gap: 12px;
+  overflow: auto;
+  border-radius: 14px;
+  padding: 14px;
+  background: #fffaf7;
+}
+
+.attachment-preview-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.attachment-preview-heading strong {
+  overflow-wrap: anywhere;
+}
+
+.attachment-preview-dialog img {
+  width: 100%;
+  max-height: calc(100vh - 120px);
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f1e7e2;
+}
+
 .calendar-screen {
   width: 100%;
   padding-bottom: 88px;
@@ -1039,6 +1225,14 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 5px;
+  }
+
+  .attachment-card {
+    grid-template-columns: 78px minmax(0, 1fr);
+  }
+
+  .attachment-thumbnail-button {
+    min-height: 118px;
   }
 
   .calendar-screen {

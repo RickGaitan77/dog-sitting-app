@@ -1,4 +1,5 @@
 import type { Table } from 'dexie'
+import type { AttachmentBlobRecord } from '../db/attachmentBlob'
 import type {
   AppSettings,
   Area,
@@ -198,6 +199,20 @@ export class MealRepository extends EntityRepository<Meal> {
 }
 
 export class AttachmentRepository extends EntityRepository<Attachment> {
+  private readonly blobTable: Table<AttachmentBlobRecord, string>
+  private readonly database: DogSittingDatabase
+
+  constructor(
+    table: Table<Attachment, string>,
+    blobTable: Table<AttachmentBlobRecord, string>,
+    entityName: string,
+    database: DogSittingDatabase,
+  ) {
+    super(table, entityName)
+    this.blobTable = blobTable
+    this.database = database
+  }
+
   getByOwner(
     ownerType: AttachmentOwnerType,
     ownerId: string,
@@ -206,6 +221,37 @@ export class AttachmentRepository extends EntityRepository<Attachment> {
       .where('[ownerType+ownerId]')
       .equals([ownerType, ownerId])
       .sortBy('createdAt')
+  }
+
+  getBlob(attachmentId: string): Promise<AttachmentBlobRecord | undefined> {
+    return this.blobTable.get(attachmentId)
+  }
+
+  async addWithBlob(
+    attachment: Attachment,
+    data: Blob,
+  ): Promise<Attachment> {
+    await this.database.transaction(
+      'rw',
+      [this.table, this.blobTable],
+      async () => {
+        await this.table.add(attachment)
+        await this.blobTable.add({ attachmentId: attachment.id, data })
+      },
+    )
+
+    return attachment
+  }
+
+  async deleteWithBlob(attachmentId: string): Promise<void> {
+    await this.database.transaction(
+      'rw',
+      [this.table, this.blobTable],
+      async () => {
+        await this.blobTable.delete(attachmentId)
+        await this.table.delete(attachmentId)
+      },
+    )
   }
 }
 
@@ -260,7 +306,9 @@ export function createRepositories(database: DogSittingDatabase) {
     meals: new MealRepository(database.meals, 'Meal'),
     attachments: new AttachmentRepository(
       database.attachments,
+      database.attachmentBlobs,
       'Attachment',
+      database,
     ),
     settings: new SettingsRepository(database.settings),
   }

@@ -1,6 +1,6 @@
 export const DATABASE_NAME = 'dog-sitting-app'
 
-export const DATABASE_VERSION = 2
+export const DATABASE_VERSION = 3
 
 export const STORES = {
   clients: 'clients',
@@ -11,6 +11,7 @@ export const STORES = {
   generalEvents: 'generalEvents',
   meals: 'meals',
   attachments: 'attachments',
+  attachmentBlobs: 'attachmentBlobs',
   settings: 'settings',
 } as const
 
@@ -29,7 +30,7 @@ export const STORE_SCHEMA_VERSION_1 = {
   [STORES.settings]: '',
 } as const
 
-export const STORE_SCHEMA = {
+export const STORE_SCHEMA_VERSION_2 = {
   [STORES.clients]: 'id, name, areaId',
   [STORES.pets]: 'id, clientId, name',
   [STORES.bookings]:
@@ -42,4 +43,9 @@ export const STORE_SCHEMA = {
   [STORES.attachments]:
     'id, ownerType, ownerId, [ownerType+ownerId], createdAt',
   [STORES.settings]: '',
+} as const
+
+export const STORE_SCHEMA = {
+  ...STORE_SCHEMA_VERSION_2,
+  [STORES.attachmentBlobs]: 'attachmentId',
 } as const

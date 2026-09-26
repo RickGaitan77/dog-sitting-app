@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import ClientForm from '../components/clients/ClientForm'
 import PetForm from '../components/clients/PetForm'
+import AttachmentSection from '../components/attachments/AttachmentSection'
 import { appServices, type NewEntity } from '../services'
 import type { Area, Client, Pet } from '../Types'
 
@@ -241,6 +242,12 @@ function ClientsScreen() {
           <div className="detail-wide"><span>Notes</span><p>{valueOrFallback(selectedClient.notes)}</p></div>
         </div>
 
+        <AttachmentSection
+          ownerType="Client"
+          ownerId={selectedClient.id}
+          ownerName={selectedClient.name}
+        />
+
         <div className="section-heading">
           <div><p className="eyebrow">Care profiles</p><h3>Pets</h3></div>
           {petBeingEdited === null && <button className="primary-button" type="button" onClick={() => setPetBeingEdited('new')}>Add pet</button>}
@@ -286,6 +293,11 @@ function ClientsScreen() {
                   <div><dt>Care notes</dt><dd>{valueOrFallback(pet.careNotes)}</dd></div>
                   <div><dt>Special instructions</dt><dd>{valueOrFallback(pet.specialInstructions)}</dd></div>
                 </dl>
+                <AttachmentSection
+                  ownerType="Pet"
+                  ownerId={pet.id}
+                  ownerName={pet.name}
+                />
               </article>
             ))}
           </div>
