@@ -9,6 +9,7 @@ import {
 } from '../services'
 import type { AppSettings } from '../Types'
 import AreasManager from '../components/areas/AreasManager'
+import ServicesManager from '../components/services/ServicesManager'
 
 type ReminderSettingKey =
   | 'weeklyOverviewEnabled'
@@ -77,7 +78,7 @@ type PendingRestore = {
 }
 
 function SettingsScreen() {
-  const [view, setView] = useState<'settings' | 'areas'>('settings')
+  const [view, setView] = useState<'settings' | 'areas' | 'services'>('settings')
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [permission, setPermission] = useState<BrowserNotificationPermission>(
     getBrowserNotificationPermission,
@@ -237,6 +238,10 @@ function SettingsScreen() {
     return <AreasManager onBack={() => setView('settings')} />
   }
 
+  if (view === 'services') {
+    return <ServicesManager onBack={() => setView('settings')} />
+  }
+
   return (
     <section className="settings-screen">
       <div className="view-heading settings-heading">
@@ -252,7 +257,7 @@ function SettingsScreen() {
         <section className="settings-card" aria-labelledby="scheduling-settings-title">
           <div className="settings-section-heading">
             <h3 id="scheduling-settings-title">Scheduling</h3>
-            <p>Manage Calendar display and the Areas used by clients, bookings, and events.</p>
+            <p>Manage Calendar display, Areas, and Services used for scheduling.</p>
           </div>
 
           <div className="settings-list">
@@ -278,6 +283,17 @@ function SettingsScreen() {
               <span>
                 <strong>Areas &amp; Colors</strong>
                 <small>Create, reorder, recolor, archive, or restore scheduling Areas.</small>
+              </span>
+              <span aria-hidden="true">›</span>
+            </button>
+            <button
+              className="settings-link-row"
+              type="button"
+              onClick={() => setView('services')}
+            >
+              <span>
+                <strong>Services</strong>
+                <small>Create, reorder, rename, archive, or restore Booking Services.</small>
               </span>
               <span aria-hidden="true">›</span>
             </button>

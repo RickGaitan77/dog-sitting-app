@@ -1,5 +1,7 @@
 import type { AppSettings, Area, Service } from '../Types'
 
+export const MEDICATION_SERVICE_ID = 'service-medication'
+
 export const SETTINGS_PRIMARY_KEY = 'app-settings'
 
 export const DEFAULT_SETTINGS: Readonly<AppSettings> = {
@@ -62,7 +64,7 @@ export const DEFAULT_SERVICES: readonly Service[] = [
     archived: false,
   },
   {
-    id: 'service-medication',
+    id: MEDICATION_SERVICE_ID,
     name: 'Medication',
     sortOrder: 4,
     archived: false,

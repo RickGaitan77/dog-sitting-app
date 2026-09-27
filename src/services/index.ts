@@ -6,6 +6,12 @@ export {
 } from './areaService'
 export type { AreaInput } from './areaService'
 export {
+  normalizeServiceName,
+  ServiceCatalogService,
+  ServiceValidationError,
+} from './serviceCatalogService'
+export type { ServiceInput } from './serviceCatalogService'
+export {
   AttachmentFileNotFoundError,
   AttachmentService,
   AttachmentValidationError,

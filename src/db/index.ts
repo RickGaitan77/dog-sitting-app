@@ -3,6 +3,7 @@ export {
   DEFAULT_AREAS,
   DEFAULT_SERVICES,
   DEFAULT_SETTINGS,
+  MEDICATION_SERVICE_ID,
   SETTINGS_PRIMARY_KEY,
   createDefaultSettings,
 } from './defaults'

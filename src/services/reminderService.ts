@@ -8,8 +8,8 @@ import type {
   WeeklyOverviewItem,
 } from '../Types'
 import type { AppRepositories } from '../repositories'
+import { MEDICATION_SERVICE_ID } from '../db/defaults'
 
-const MEDICATION_SERVICE_NAME = 'medication'
 const WEEK_LENGTH_DAYS = 6
 
 function parseDateOnly(date: string): Date {
@@ -129,23 +129,12 @@ export function buildDueReminders(
   }
 
   if (data.settings.medicationReminderEnabled) {
-    const medicationServiceIds = new Set(
-      data.services
-        .filter(
-          (service) =>
-            service.name.trim().toLowerCase() === MEDICATION_SERVICE_NAME,
-        )
-        .map((service) => service.id),
-    )
-
     activeBookings
       .filter(
         (booking) =>
           booking.startDate <= date &&
           booking.endDate >= date &&
-          booking.serviceIds.some((serviceId) =>
-            medicationServiceIds.has(serviceId),
-          ),
+          booking.serviceIds.includes(MEDICATION_SERVICE_ID),
       )
       .forEach((booking) => {
         reminders.push(
