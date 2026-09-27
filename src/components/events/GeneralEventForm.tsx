@@ -5,6 +5,7 @@ import type { NewEntity } from '../../services'
 type GeneralEventFormProps = {
   areas: Area[]
   event?: GeneralEvent
+  initialDate?: string
   isSaving: boolean
   onCancel: () => void
   onSubmit: (event: NewEntity<GeneralEvent>) => Promise<void>
@@ -21,6 +22,7 @@ type GeneralEventFormValues = {
 function GeneralEventForm({
   areas,
   event,
+  initialDate,
   isSaving,
   onCancel,
   onSubmit,
@@ -28,8 +30,8 @@ function GeneralEventForm({
   const [errors, setErrors] = useState<string[]>([])
   const [values, setValues] = useState<GeneralEventFormValues>({
     title: event?.title ?? '',
-    startDate: event?.startDate ?? '',
-    endDate: event?.endDate ?? '',
+    startDate: event?.startDate ?? initialDate ?? '',
+    endDate: event?.endDate ?? initialDate ?? '',
     areaId: event?.areaId ?? '',
     notes: event?.notes ?? '',
   })

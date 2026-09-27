@@ -15,6 +15,7 @@ export type ScreenContext = {
   onEventCreationHandled: () => void
   onMealCreationHandled: () => void
   onOpenMeal: (mealId: string) => void
+  onOpenSettings: () => void
 }
 
 type ScreenRenderer = (context: ScreenContext) => ReactNode

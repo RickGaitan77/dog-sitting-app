@@ -30,15 +30,16 @@ type CalendarScreenProps = {
   onBookingCreationHandled: () => void
   onEventCreationHandled: () => void
   onOpenMeal: (mealId: string) => void
+  onOpenSettings: () => void
 }
 
 type BookingView =
   | { name: 'month' }
   | { name: 'manage' }
-  | { name: 'create'; returnTo: BookingReturnView }
+  | { name: 'create'; initialDate?: string; returnTo: BookingReturnView }
   | { name: 'detail'; bookingId: string; returnTo: BookingReturnView }
   | { name: 'edit'; bookingId: string; returnTo: BookingReturnView }
-  | { name: 'event-create' }
+  | { name: 'event-create'; initialDate?: string }
   | { name: 'event-detail'; eventId: string }
   | { name: 'event-edit'; eventId: string }
 
@@ -54,6 +55,7 @@ function CalendarScreen({
   onBookingCreationHandled,
   onEventCreationHandled,
   onOpenMeal,
+  onOpenSettings,
 }: CalendarScreenProps) {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [events, setEvents] = useState<GeneralEvent[]>([])
@@ -324,8 +326,9 @@ function CalendarScreen({
       <section className="event-screen">
         {error !== null && <p className="error-message">{error}</p>}
         <GeneralEventForm
-          key={selectedEvent?.id ?? 'new-event'}
+          key={selectedEvent?.id ?? `new-event-${effectiveView.name === 'event-create' ? effectiveView.initialDate ?? 'open' : 'edit'}`}
           event={selectedEvent}
+          initialDate={effectiveView.name === 'event-create' ? effectiveView.initialDate : undefined}
           areas={areas}
           isSaving={isSaving}
           onCancel={closeEventForm}
@@ -365,8 +368,9 @@ function CalendarScreen({
       <section className="booking-screen">
         {error !== null && <p className="error-message">{error}</p>}
         <BookingForm
-          key={selectedBooking?.id ?? 'new-booking'}
+          key={selectedBooking?.id ?? `new-booking-${effectiveView.name === 'create' ? effectiveView.initialDate ?? 'open' : 'edit'}`}
           booking={selectedBooking}
+          initialDate={effectiveView.name === 'create' ? effectiveView.initialDate : undefined}
           clients={clients}
           pets={pets}
           areas={areas}
@@ -460,6 +464,18 @@ function CalendarScreen({
           areas={areas}
           services={services}
           showMealOverlay={showMealOverlay}
+          onAddBooking={(date) =>
+            setView({ name: 'create', initialDate: date, returnTo: 'month' })
+          }
+          onAddEvent={(date) =>
+            setView({ name: 'event-create', initialDate: date })
+          }
+          onEditBooking={(bookingId) =>
+            setView({ name: 'edit', bookingId, returnTo: 'month' })
+          }
+          onEditEvent={(eventId) =>
+            setView({ name: 'event-edit', eventId })
+          }
           onPreviousMonth={() =>
             setDisplayedMonth((current) => moveMonth(current, -1))
           }
@@ -467,13 +483,14 @@ function CalendarScreen({
             setDisplayedMonth((current) => moveMonth(current, 1))
           }
           onToday={() => setDisplayedMonth(getCurrentMonth())}
-          onOpenBooking={(bookingId) =>
+          onViewBooking={(bookingId) =>
             setView({ name: 'detail', bookingId, returnTo: 'month' })
           }
-          onOpenEvent={(eventId) =>
+          onViewEvent={(eventId) =>
             setView({ name: 'event-detail', eventId })
           }
           onOpenMeal={onOpenMeal}
+          onOpenSettings={onOpenSettings}
         />
       </section>
     )

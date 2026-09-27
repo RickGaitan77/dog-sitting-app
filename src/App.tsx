@@ -45,6 +45,7 @@ function App() {
             setEventCreationRequested(false),
           onMealCreationHandled: () =>
             setMealCreationRequested(false),
+          onOpenSettings: () => changeTab('Settings'),
           onOpenMeal: (mealId) => {
             setActiveTab('Meals')
             setShowAddMenu(false)

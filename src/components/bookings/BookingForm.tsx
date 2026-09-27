@@ -19,6 +19,7 @@ type BookingFormProps = {
   pets: Pet[]
   areas: Area[]
   services: Service[]
+  initialDate?: string
   isSaving: boolean
   onCancel: () => void
   onSubmit: (
@@ -63,6 +64,7 @@ function BookingForm({
   pets,
   areas,
   services,
+  initialDate,
   isSaving,
   onCancel,
   onSubmit,
@@ -71,8 +73,8 @@ function BookingForm({
   const [values, setValues] = useState<BookingFormValues>({
     clientId: booking?.clientId ?? '',
     petIds: booking?.petIds ?? [],
-    startDate: booking?.startDate ?? '',
-    endDate: booking?.endDate ?? '',
+    startDate: booking?.startDate ?? initialDate ?? '',
+    endDate: booking?.endDate ?? initialDate ?? '',
     areaId: booking?.areaId ?? '',
     serviceIds: booking?.serviceIds ?? [],
     status: booking?.status ?? 'Tentative',
