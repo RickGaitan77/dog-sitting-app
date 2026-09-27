@@ -4,8 +4,10 @@ import './index.css'
 import App from './App.tsx'
 import { APP_DISPLAY_NAME } from './config/appMetadata'
 import { initializeDatabase } from './db'
+import { registerServiceWorker } from './pwa/registerServiceWorker'
 
 document.title = APP_DISPLAY_NAME
+registerServiceWorker()
 
 const rootElement = document.getElementById('root')
 

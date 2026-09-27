@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "verify:version": "node scripts/verify-app-version.mjs"
+    "verify:version": "node scripts/verify-app-version.mjs",
+    "verify:pwa": "node scripts/verify-pwa.mjs"
   },
   "dependencies": {
     "dexie": "^4.4.6",
