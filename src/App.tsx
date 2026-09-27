@@ -16,10 +16,12 @@ function App() {
     useState(false)
   const [mealCreationRequested, setMealCreationRequested] =
     useState(false)
+  const [mealOpenRequested, setMealOpenRequested] = useState<string | null>(null)
 
   const changeTab = (tab: AppScreen) => {
     setActiveTab(tab)
     setShowAddMenu(false)
+    setMealOpenRequested(null)
   }
 
   return (
@@ -36,12 +38,21 @@ function App() {
           bookingCreationRequested,
           eventCreationRequested,
           mealCreationRequested,
+          mealOpenRequested,
           onBookingCreationHandled: () =>
             setBookingCreationRequested(false),
           onEventCreationHandled: () =>
             setEventCreationRequested(false),
           onMealCreationHandled: () =>
             setMealCreationRequested(false),
+          onOpenMeal: (mealId) => {
+            setActiveTab('Meals')
+            setShowAddMenu(false)
+            setBookingCreationRequested(false)
+            setEventCreationRequested(false)
+            setMealCreationRequested(false)
+            setMealOpenRequested(mealId)
+          },
         })}
       </div>
 
@@ -59,6 +70,7 @@ function App() {
               setShowAddMenu(false)
               setEventCreationRequested(false)
               setMealCreationRequested(false)
+              setMealOpenRequested(null)
               setBookingCreationRequested(true)
             }}
             onAddEvent={() => {
@@ -66,6 +78,7 @@ function App() {
               setShowAddMenu(false)
               setBookingCreationRequested(false)
               setMealCreationRequested(false)
+              setMealOpenRequested(null)
               setEventCreationRequested(true)
             }}
             onAddMeal={() => {
@@ -73,6 +86,7 @@ function App() {
               setShowAddMenu(false)
               setBookingCreationRequested(false)
               setEventCreationRequested(false)
+              setMealOpenRequested(null)
               setMealCreationRequested(true)
             }}
             onToggle={() =>

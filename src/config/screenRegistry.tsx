@@ -10,9 +10,11 @@ export type ScreenContext = {
   bookingCreationRequested: boolean
   eventCreationRequested: boolean
   mealCreationRequested: boolean
+  mealOpenRequested: string | null
   onBookingCreationHandled: () => void
   onEventCreationHandled: () => void
   onMealCreationHandled: () => void
+  onOpenMeal: (mealId: string) => void
 }
 
 type ScreenRenderer = (context: ScreenContext) => ReactNode
@@ -24,6 +26,7 @@ export const screenRegistry: Record<AppScreen, ScreenRenderer> = {
   Meals: (context) => (
     <MealsScreen
       mealCreationRequested={context.mealCreationRequested}
+      mealOpenRequested={context.mealOpenRequested}
       onMealCreationHandled={context.onMealCreationHandled}
     />
   ),

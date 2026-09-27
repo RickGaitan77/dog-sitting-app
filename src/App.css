@@ -1472,10 +1472,38 @@
   cursor: pointer;
 }
 
+.calendar-meal {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 4px 5px;
+  border: 1px solid #c99152;
+  border-left: 4px solid #c2763d;
+  border-radius: 5px;
+  background: #fff1d8;
+  color: #443229;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendar-meal-prep {
+  border-style: dashed;
+  border-color: #889276;
+  border-left-color: #71805c;
+  background: #f1f2df;
+}
+
+.calendar-meal-prep.prep-complete {
+  opacity: 0.62;
+}
+
 .calendar-booking strong,
 .calendar-booking span,
 .calendar-event strong,
-.calendar-event span {
+.calendar-event span,
+.calendar-meal strong,
+.calendar-meal span {
   overflow: hidden;
   font-size: 0.7rem;
   line-height: 1.15;
@@ -1491,6 +1519,10 @@
   font-weight: 750;
 }
 
+.calendar-meal strong {
+  font-weight: 750;
+}
+
 .calendar-booking span {
   color: #63575a;
   font-size: 0.62rem;
@@ -1502,6 +1534,18 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.calendar-meal span {
+  color: #7b593c;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.calendar-meal-prep span {
+  color: #596248;
 }
 
 @media (max-width: 600px) {
@@ -1578,13 +1622,23 @@
     border-left-width: 3px;
   }
 
+  .calendar-meal {
+    padding: 3px;
+    border-left-width: 3px;
+  }
+
   .calendar-booking strong,
   .calendar-event strong {
     font-size: 0.62rem;
   }
 
+  .calendar-meal strong {
+    font-size: 0.62rem;
+  }
+
   .calendar-booking span,
-  .calendar-event span {
+  .calendar-event span,
+  .calendar-meal span {
     display: none;
   }
 

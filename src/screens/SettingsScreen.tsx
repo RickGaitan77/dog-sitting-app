@@ -16,6 +16,8 @@ type ReminderSettingKey =
   | 'medicationReminderEnabled'
   | 'mealPlanningReminderEnabled'
 
+type ToggleSettingKey = ReminderSettingKey | 'showMealOverlay'
+
 const REMINDER_CONTROLS: ReadonlyArray<{
   key: ReminderSettingKey
   title: string
@@ -104,8 +106,8 @@ function SettingsScreen() {
     }
   }, [])
 
-  const updateReminderSetting = async (
-    key: ReminderSettingKey,
+  const updateToggleSetting = async (
+    key: ToggleSettingKey,
     enabled: boolean,
   ) => {
     setIsSaving(true)
@@ -241,6 +243,32 @@ function SettingsScreen() {
       {error !== null && <p className="error-message">{error}</p>}
 
       {settings !== null && (
+        <section className="settings-card" aria-labelledby="calendar-settings-title">
+          <div className="settings-section-heading">
+            <h3 id="calendar-settings-title">Calendar</h3>
+            <p>Choose which planning details appear in the month view.</p>
+          </div>
+
+          <div className="settings-list">
+            <label className="setting-toggle">
+              <span>
+                <strong>Show Meals on Calendar</strong>
+                <small>Display meal dates and separate prep dates in the month view.</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={settings.showMealOverlay}
+                disabled={isSaving}
+                onChange={(event) =>
+                  void updateToggleSetting('showMealOverlay', event.target.checked)
+                }
+              />
+            </label>
+          </div>
+        </section>
+      )}
+
+      {settings !== null && (
         <section className="settings-card" aria-labelledby="reminder-settings-title">
           <div className="settings-section-heading">
             <h3 id="reminder-settings-title">Reminders</h3>
@@ -259,7 +287,7 @@ function SettingsScreen() {
                   checked={settings[control.key]}
                   disabled={isSaving}
                   onChange={(event) =>
-                    void updateReminderSetting(control.key, event.target.checked)
+                    void updateToggleSetting(control.key, event.target.checked)
                   }
                 />
               </label>

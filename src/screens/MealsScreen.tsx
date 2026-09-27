@@ -7,6 +7,7 @@ import type { Meal } from '../Types'
 
 type MealsScreenProps = {
   mealCreationRequested: boolean
+  mealOpenRequested: string | null
   onMealCreationHandled: () => void
 }
 
@@ -18,10 +19,15 @@ type MealView =
 
 function MealsScreen({
   mealCreationRequested,
+  mealOpenRequested,
   onMealCreationHandled,
 }: MealsScreenProps) {
   const [meals, setMeals] = useState<Meal[]>([])
-  const [view, setView] = useState<MealView>({ name: 'list' })
+  const [view, setView] = useState<MealView>(() =>
+    mealOpenRequested === null
+      ? { name: 'list' }
+      : { name: 'detail', mealId: mealOpenRequested },
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)

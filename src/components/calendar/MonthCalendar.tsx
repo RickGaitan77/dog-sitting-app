@@ -4,6 +4,7 @@ import type {
   Booking,
   Client,
   GeneralEvent,
+  Meal,
   Pet,
   Service,
 } from '../../Types'
@@ -13,20 +14,24 @@ import {
   getMonthLabel,
   type CalendarMonth,
 } from './calendarDates'
+import { buildMealCalendarItems } from './mealCalendarItems'
 
 type MonthCalendarProps = {
   month: CalendarMonth
   bookings: Booking[]
   clients: Client[]
   events: GeneralEvent[]
+  meals: Meal[]
   pets: Pet[]
   areas: Area[]
   services: Service[]
   onNextMonth: () => void
   onOpenBooking: (bookingId: string) => void
   onOpenEvent: (eventId: string) => void
+  onOpenMeal: (mealId: string) => void
   onPreviousMonth: () => void
   onToday: () => void
+  showMealOverlay: boolean
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -36,14 +41,17 @@ function MonthCalendar({
   bookings,
   clients,
   events,
+  meals,
   pets,
   areas,
   services,
   onNextMonth,
   onOpenBooking,
   onOpenEvent,
+  onOpenMeal,
   onPreviousMonth,
   onToday,
+  showMealOverlay,
 }: MonthCalendarProps) {
   const days = useMemo(() => buildMonthGrid(month), [month])
   const clientById = useMemo(
@@ -66,6 +74,10 @@ function MonthCalendar({
     () => bookings.filter((booking) => booking.status !== 'Cancelled'),
     [bookings],
   )
+  const mealItems = useMemo(
+    () => buildMealCalendarItems(meals, showMealOverlay),
+    [meals, showMealOverlay],
+  )
   const monthRange = getMonthDateRange(month)
   const hasItemsThisMonth =
     activeBookings.some(
@@ -77,6 +89,10 @@ function MonthCalendar({
       (event) =>
         event.startDate <= monthRange.endDate &&
         event.endDate >= monthRange.startDate,
+    ) ||
+    mealItems.some(
+      (item) =>
+        item.date >= monthRange.startDate && item.date <= monthRange.endDate,
     )
 
   return (
@@ -107,7 +123,11 @@ function MonthCalendar({
       </div>
 
       {!hasItemsThisMonth && (
-        <p className="calendar-empty-note">No bookings or events this month.</p>
+        <p className="calendar-empty-note">
+          {showMealOverlay
+            ? 'No bookings, events, or meals this month.'
+            : 'No bookings or events this month.'}
+        </p>
       )}
 
       <div className="calendar-grid" role="grid" aria-label={getMonthLabel(month)}>
@@ -126,6 +146,7 @@ function MonthCalendar({
             (event) =>
               event.startDate <= day.date && event.endDate >= day.date,
           )
+          const dayMealItems = mealItems.filter((item) => item.date === day.date)
 
           return (
             <div
@@ -193,6 +214,32 @@ function MonthCalendar({
                     >
                       <strong>{event.title}</strong>
                       <span>Event</span>
+                    </button>
+                  )
+                })}
+                {dayMealItems.map((item) => {
+                  const isCompletedPrep =
+                    item.kind === 'prep' && item.meal.prepCompleted
+                  const itemLabel = item.kind === 'prep' ? 'Meal prep' : 'Meal'
+                  const secondaryLabel = item.kind === 'prep'
+                    ? isCompletedPrep ? 'Prep done' : 'Prep'
+                    : item.meal.mealType ?? 'Meal'
+
+                  return (
+                    <button
+                      className={[
+                        'calendar-meal',
+                        `calendar-meal-${item.kind}`,
+                        isCompletedPrep ? 'prep-complete' : '',
+                      ].filter(Boolean).join(' ')}
+                      type="button"
+                      title={`${itemLabel}: ${item.meal.name}`}
+                      aria-label={`${item.meal.name} ${itemLabel.toLowerCase()} on ${day.date}${isCompletedPrep ? ', completed' : ''}`}
+                      onClick={() => onOpenMeal(item.meal.id)}
+                      key={`${item.kind}-${item.meal.id}`}
+                    >
+                      <strong>{item.meal.name}</strong>
+                      <span>{secondaryLabel}</span>
                     </button>
                   )
                 })}

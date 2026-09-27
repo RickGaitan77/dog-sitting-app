@@ -19,6 +19,7 @@ import type {
   BookingStatus,
   Client,
   GeneralEvent,
+  Meal,
   Pet,
   Service,
 } from '../Types'
@@ -28,6 +29,7 @@ type CalendarScreenProps = {
   eventCreationRequested: boolean
   onBookingCreationHandled: () => void
   onEventCreationHandled: () => void
+  onOpenMeal: (mealId: string) => void
 }
 
 type BookingView =
@@ -51,13 +53,16 @@ function CalendarScreen({
   eventCreationRequested,
   onBookingCreationHandled,
   onEventCreationHandled,
+  onOpenMeal,
 }: CalendarScreenProps) {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [events, setEvents] = useState<GeneralEvent[]>([])
+  const [meals, setMeals] = useState<Meal[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [pets, setPets] = useState<Pet[]>([])
   const [areas, setAreas] = useState<Area[]>([])
   const [services, setServices] = useState<Service[]>([])
+  const [showMealOverlay, setShowMealOverlay] = useState(false)
   const [view, setView] = useState<BookingView>({ name: 'month' })
   const [displayedMonth, setDisplayedMonth] = useState(getCurrentMonth)
   const [isLoading, setIsLoading] = useState(true)
@@ -113,6 +118,8 @@ function CalendarScreen({
       appServices.repositories.pets.getAll(),
       appServices.repositories.areas.getAll(),
       appServices.repositories.services.getAll(),
+      appServices.meals.getAll(),
+      appServices.settings.get(),
     ])
       .then(([
         storedBookings,
@@ -121,6 +128,8 @@ function CalendarScreen({
         storedPets,
         storedAreas,
         storedServices,
+        storedMeals,
+        storedSettings,
       ]) => {
         if (!isCurrent) return
 
@@ -138,6 +147,8 @@ function CalendarScreen({
         setPets(storedPets)
         setAreas(storedAreas)
         setServices(storedServices)
+        setMeals(storedMeals)
+        setShowMealOverlay(storedSettings.showMealOverlay)
       })
       .catch((loadError: unknown) => {
         if (isCurrent) {
@@ -443,10 +454,12 @@ function CalendarScreen({
           month={displayedMonth}
           bookings={bookings}
           events={events}
+          meals={meals}
           clients={clients}
           pets={pets}
           areas={areas}
           services={services}
+          showMealOverlay={showMealOverlay}
           onPreviousMonth={() =>
             setDisplayedMonth((current) => moveMonth(current, -1))
           }
@@ -460,6 +473,7 @@ function CalendarScreen({
           onOpenEvent={(eventId) =>
             setView({ name: 'event-detail', eventId })
           }
+          onOpenMeal={onOpenMeal}
         />
       </section>
     )
