@@ -6,6 +6,7 @@ import FloatingAddButton from './components/FloatingAddButton'
 import ReminderCenter from './components/reminders/ReminderCenter'
 import { screenRegistry } from './config/screenRegistry'
 import type { AppScreen } from './Types/AppScreen'
+import type { ScheduleFilters } from './Types/ScheduleFilters'
 
 function App() {
   const [activeTab, setActiveTab] = useState<AppScreen>('Calendar')
@@ -17,6 +18,11 @@ function App() {
   const [mealCreationRequested, setMealCreationRequested] =
     useState(false)
   const [mealOpenRequested, setMealOpenRequested] = useState<string | null>(null)
+  const [scheduleFilters, setScheduleFilters] = useState<ScheduleFilters>({
+    bookings: true,
+    events: true,
+    meals: true,
+  })
 
   const changeTab = (tab: AppScreen) => {
     setActiveTab(tab)
@@ -39,6 +45,8 @@ function App() {
           eventCreationRequested,
           mealCreationRequested,
           mealOpenRequested,
+          scheduleFilters,
+          onScheduleFiltersChange: setScheduleFilters,
           onBookingCreationHandled: () =>
             setBookingCreationRequested(false),
           onEventCreationHandled: () =>

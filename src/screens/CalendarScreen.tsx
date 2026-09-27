@@ -23,6 +23,7 @@ import type {
   Pet,
   Service,
 } from '../Types'
+import type { ScheduleFilters } from '../Types/ScheduleFilters'
 
 type CalendarScreenProps = {
   bookingCreationRequested: boolean
@@ -31,6 +32,8 @@ type CalendarScreenProps = {
   onEventCreationHandled: () => void
   onOpenMeal: (mealId: string) => void
   onOpenSettings: () => void
+  filters: ScheduleFilters
+  onFiltersChange: (filters: ScheduleFilters) => void
 }
 
 type BookingView =
@@ -56,6 +59,8 @@ function CalendarScreen({
   onEventCreationHandled,
   onOpenMeal,
   onOpenSettings,
+  filters,
+  onFiltersChange,
 }: CalendarScreenProps) {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [events, setEvents] = useState<GeneralEvent[]>([])
@@ -464,6 +469,8 @@ function CalendarScreen({
           areas={areas}
           services={services}
           showMealOverlay={showMealOverlay}
+          filters={filters}
+          onFiltersChange={onFiltersChange}
           onAddBooking={(date) =>
             setView({ name: 'create', initialDate: date, returnTo: 'month' })
           }

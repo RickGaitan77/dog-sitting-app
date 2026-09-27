@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import AgendaList from '../components/agenda/AgendaList'
+import {
+  AGENDA_RANGE_STEP_DAYS,
+  addDays,
+  getAgendaRange,
+} from '../components/agenda/agendaDates'
 import BookingForm from '../components/bookings/BookingForm'
+import CalendarBottomSheet from '../components/calendar/CalendarBottomSheet'
+import { getTodayDateString } from '../components/calendar/calendarDates'
+import ScheduleQuickDetailSheet from '../components/calendar/ScheduleQuickDetailSheet'
 import GeneralEventDetail from '../components/events/GeneralEventDetail'
 import GeneralEventForm from '../components/events/GeneralEventForm'
 import {
@@ -17,6 +25,7 @@ import type {
   Pet,
   Service,
 } from '../Types'
+import type { ScheduleFilters } from '../Types/ScheduleFilters'
 
 type AgendaView =
   | { name: 'list' }
@@ -25,7 +34,24 @@ type AgendaView =
   | { name: 'event-detail'; eventId: string }
   | { name: 'event-edit'; eventId: string }
 
-function AgendaScreen() {
+type AgendaOverlay =
+  | { name: 'booking'; id: string }
+  | { name: 'event'; id: string }
+  | { name: 'filters' }
+  | null
+
+type AgendaScreenProps = {
+  filters: ScheduleFilters
+  onFiltersChange: (filters: ScheduleFilters) => void
+}
+
+function AgendaScreen({ filters, onFiltersChange }: AgendaScreenProps) {
+  const initialRange = useMemo(
+    () => getAgendaRange(getTodayDateString()),
+    [],
+  )
+  const [rangeStart, setRangeStart] = useState(initialRange.startDate)
+  const [rangeEnd, setRangeEnd] = useState(initialRange.endDate)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [events, setEvents] = useState<GeneralEvent[]>([])
   const [clients, setClients] = useState<Client[]>([])
@@ -33,6 +59,8 @@ function AgendaScreen() {
   const [areas, setAreas] = useState<Area[]>([])
   const [services, setServices] = useState<Service[]>([])
   const [view, setView] = useState<AgendaView>({ name: 'list' })
+  const [overlay, setOverlay] = useState<AgendaOverlay>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,21 +83,23 @@ function AgendaScreen() {
   )
 
   const loadBookings = useCallback(async () => {
-    const storedBookings = await appServices.bookings.getAll()
+    const storedBookings = await appServices.repositories.bookings
+      .getOverlappingDateRange(rangeStart, rangeEnd)
     setBookings(storedBookings)
-  }, [])
+  }, [rangeEnd, rangeStart])
 
   const loadEvents = useCallback(async () => {
-    const storedEvents = await appServices.generalEvents.getAll()
+    const storedEvents = await appServices.repositories.generalEvents
+      .getOverlappingDateRange(rangeStart, rangeEnd)
     setEvents(storedEvents)
-  }, [])
+  }, [rangeEnd, rangeStart])
 
   useEffect(() => {
     let isCurrent = true
 
     void Promise.all([
-      appServices.bookings.getAll(),
-      appServices.generalEvents.getAll(),
+      appServices.repositories.bookings.getOverlappingDateRange(rangeStart, rangeEnd),
+      appServices.repositories.generalEvents.getOverlappingDateRange(rangeStart, rangeEnd),
       appServices.repositories.clients.getAll(),
       appServices.repositories.pets.getAll(),
       appServices.repositories.areas.getAll(),
@@ -105,7 +135,7 @@ function AgendaScreen() {
     return () => {
       isCurrent = false
     }
-  }, [])
+  }, [rangeEnd, rangeStart])
 
   const selectedBooking =
     view.name === 'detail' || view.name === 'edit'
@@ -115,6 +145,12 @@ function AgendaScreen() {
     view.name === 'event-detail' || view.name === 'event-edit'
       ? events.find((event) => event.id === view.eventId)
       : undefined
+  const quickBooking = overlay?.name === 'booking'
+    ? bookings.find((booking) => booking.id === overlay.id)
+    : undefined
+  const quickEvent = overlay?.name === 'event'
+    ? events.find((event) => event.id === overlay.id)
+    : undefined
 
   const saveBooking = async (input: NewEntity<Booking>) => {
     if (view.name !== 'edit' || selectedBooking === undefined) return
@@ -123,19 +159,14 @@ function AgendaScreen() {
     setError(null)
 
     try {
-      const savedBooking = await appServices.bookings.update(
-        selectedBooking.id,
-        input,
-      )
+      const savedBooking = await appServices.bookings.update(selectedBooking.id, input)
       await loadBookings()
       setView({ name: 'detail', bookingId: savedBooking.id })
     } catch (saveError: unknown) {
       console.error('Failed to save booking', saveError)
-      setError(
-        saveError instanceof Error
-          ? saveError.message
-          : 'The booking could not be saved. Please try again.',
-      )
+      setError(saveError instanceof Error
+        ? saveError.message
+        : 'The booking could not be saved. Please try again.')
     } finally {
       setIsSaving(false)
     }
@@ -148,19 +179,14 @@ function AgendaScreen() {
     setError(null)
 
     try {
-      const savedEvent = await appServices.generalEvents.update(
-        selectedEvent.id,
-        input,
-      )
+      const savedEvent = await appServices.generalEvents.update(selectedEvent.id, input)
       await loadEvents()
       setView({ name: 'event-detail', eventId: savedEvent.id })
     } catch (saveError: unknown) {
       console.error('Failed to save general event', saveError)
-      setError(
-        saveError instanceof Error
-          ? saveError.message
-          : 'The event could not be saved. Please try again.',
-      )
+      setError(saveError instanceof Error
+        ? saveError.message
+        : 'The event could not be saved. Please try again.')
     } finally {
       setIsSaving(false)
     }
@@ -184,10 +210,7 @@ function AgendaScreen() {
     }
   }
 
-  const changeStatus = async (
-    booking: Booking,
-    status: BookingStatus,
-  ) => {
+  const changeStatus = async (booking: Booking, status: BookingStatus) => {
     setIsSaving(true)
     setError(null)
 
@@ -203,9 +226,7 @@ function AgendaScreen() {
   }
 
   const cancelBooking = async (booking: Booking) => {
-    if (!window.confirm('Cancel this booking? The booking will be kept in history.')) {
-      return
-    }
+    if (!window.confirm('Cancel this booking? The booking will be kept in history.')) return
 
     setIsSaving(true)
     setError(null)
@@ -221,9 +242,7 @@ function AgendaScreen() {
     }
   }
 
-  if (isLoading) {
-    return <p className="status-message">Loading agenda…</p>
-  }
+  if (isLoading) return <p className="status-message">Loading agenda…</p>
 
   if (view.name === 'event-edit' && selectedEvent !== undefined) {
     return (
@@ -248,9 +267,7 @@ function AgendaScreen() {
     return (
       <GeneralEventDetail
         event={selectedEvent}
-        area={selectedEvent.areaId === undefined
-          ? undefined
-          : areaById.get(selectedEvent.areaId)}
+        area={selectedEvent.areaId === undefined ? undefined : areaById.get(selectedEvent.areaId)}
         backLabel="Agenda"
         error={error}
         isSaving={isSaving}
@@ -258,9 +275,7 @@ function AgendaScreen() {
           setError(null)
           setView({ name: 'list' })
         }}
-        onEdit={() =>
-          setView({ name: 'event-edit', eventId: selectedEvent.id })
-        }
+        onEdit={() => setView({ name: 'event-edit', eventId: selectedEvent.id })}
         onDelete={() => void deleteEvent(selectedEvent)}
       />
     )
@@ -298,16 +313,10 @@ function AgendaScreen() {
       <section className="booking-screen">
         <div className="view-heading">
           <div>
-            <button
-              className="text-button back-button"
-              type="button"
-              onClick={() => {
-                setError(null)
-                setView({ name: 'list' })
-              }}
-            >
-              ← Agenda
-            </button>
+            <button className="text-button back-button" type="button" onClick={() => {
+              setError(null)
+              setView({ name: 'list' })
+            }}>← Agenda</button>
             <p className="eyebrow">Booking</p>
             <h2>{client?.name ?? 'Unknown client'}</h2>
           </div>
@@ -325,16 +334,10 @@ function AgendaScreen() {
           <div><span>Dates</span><p>{selectedBooking.startDate} to {selectedBooking.endDate}</p></div>
           <div><span>Area</span><p>{area?.name ?? 'Unknown area'}</p></div>
           <div><span>Services</span><p>{bookingServices.map((service) => service?.name ?? 'Unknown service').join(', ')}</p></div>
-          {selectedBooking.recurrenceSeriesId !== undefined && (
-            <div><span>Recurrence</span><p>Weekly occurrence</p></div>
-          )}
+          {selectedBooking.recurrenceSeriesId !== undefined && <div><span>Recurrence</span><p>Weekly occurrence</p></div>}
           <label className="status-editor">
             Status
-            <select
-              value={selectedBooking.status}
-              disabled={isSaving}
-              onChange={(event) => void changeStatus(selectedBooking, event.target.value as BookingStatus)}
-            >
+            <select value={selectedBooking.status} disabled={isSaving} onChange={(event) => void changeStatus(selectedBooking, event.target.value as BookingStatus)}>
               {BOOKING_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
             </select>
           </label>
@@ -348,13 +351,27 @@ function AgendaScreen() {
     <section className="agenda-screen">
       <div className="agenda-heading">
         <div>
-          <p className="eyebrow">Next 30 days</p>
+          <p className="eyebrow">Chronological schedule</p>
           <h2>Agenda</h2>
         </div>
-        <p>Upcoming work, grouped by start date.</p>
+        <p>Bookings and events, grouped by month.</p>
       </div>
 
       {error !== null && <p className="error-message">{error}</p>}
+
+      <div className="agenda-tools">
+        <label className="agenda-search">
+          <span className="sr-only">Search Agenda</span>
+          <input
+            type="search"
+            value={searchQuery}
+            placeholder="Search clients, pets, areas, services, events…"
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+        </label>
+        {searchQuery !== '' && <button className="text-button" type="button" onClick={() => setSearchQuery('')}>Clear</button>}
+        <button className="secondary-button" type="button" onClick={() => setOverlay({ name: 'filters' })}>Filter</button>
+      </div>
 
       <AgendaList
         bookings={bookings}
@@ -363,13 +380,63 @@ function AgendaScreen() {
         pets={pets}
         areas={areas}
         services={services}
-        onOpenBooking={(bookingId) =>
-          setView({ name: 'detail', bookingId })
-        }
-        onOpenEvent={(eventId) =>
-          setView({ name: 'event-detail', eventId })
-        }
+        filters={filters}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        searchQuery={searchQuery}
+        onOpenBooking={(bookingId) => setOverlay({ name: 'booking', id: bookingId })}
+        onOpenEvent={(eventId) => setOverlay({ name: 'event', id: eventId })}
+        onShowEarlier={() => setRangeStart((current) => addDays(current, -AGENDA_RANGE_STEP_DAYS))}
+        onShowLater={() => setRangeEnd((current) => addDays(current, AGENDA_RANGE_STEP_DAYS))}
       />
+
+      {overlay?.name === 'filters' && (
+        <CalendarBottomSheet title="Schedule filters" onClose={() => setOverlay(null)}>
+          <p className="calendar-sheet-intro">These Booking and Event choices are shared with Calendar for this app session.</p>
+          <div className="calendar-filter-list">
+            <label><span><strong>Bookings</strong><small>Client work and recurring instances</small></span><input type="checkbox" checked={filters.bookings} onChange={(event) => onFiltersChange({ ...filters, bookings: event.target.checked })} /></label>
+            <label><span><strong>General Events</strong><small>Personal and non-client commitments</small></span><input type="checkbox" checked={filters.events} onChange={(event) => onFiltersChange({ ...filters, events: event.target.checked })} /></label>
+          </div>
+        </CalendarBottomSheet>
+      )}
+
+      {quickBooking !== undefined && (
+        <ScheduleQuickDetailSheet
+          areas={areas}
+          booking={quickBooking}
+          clients={clients}
+          pets={pets}
+          services={services}
+          onClose={() => setOverlay(null)}
+          onViewDetails={() => {
+            setOverlay(null)
+            setView({ name: 'detail', bookingId: quickBooking.id })
+          }}
+          onEdit={() => {
+            setOverlay(null)
+            setView({ name: 'edit', bookingId: quickBooking.id })
+          }}
+        />
+      )}
+
+      {quickEvent !== undefined && (
+        <ScheduleQuickDetailSheet
+          areas={areas}
+          event={quickEvent}
+          clients={clients}
+          pets={pets}
+          services={services}
+          onClose={() => setOverlay(null)}
+          onViewDetails={() => {
+            setOverlay(null)
+            setView({ name: 'event-detail', eventId: quickEvent.id })
+          }}
+          onEdit={() => {
+            setOverlay(null)
+            setView({ name: 'event-edit', eventId: quickEvent.id })
+          }}
+        />
+      )}
     </section>
   )
 }

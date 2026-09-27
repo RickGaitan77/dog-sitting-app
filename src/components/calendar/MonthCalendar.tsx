@@ -16,9 +16,11 @@ import type {
   Pet,
   Service,
 } from '../../Types'
+import type { ScheduleFilters } from '../../Types/ScheduleFilters'
 import { formatBookingDateRange } from '../agenda/agendaDates'
 import { getReadableTextColor } from '../../utils/areaColors'
 import CalendarBottomSheet from './CalendarBottomSheet'
+import ScheduleQuickDetailSheet from './ScheduleQuickDetailSheet'
 import {
   buildMonthGrid,
   getMonthDateRange,
@@ -54,6 +56,8 @@ type MonthCalendarProps = {
   onViewBooking: (bookingId: string) => void
   onViewEvent: (eventId: string) => void
   showMealOverlay: boolean
+  filters: ScheduleFilters
+  onFiltersChange: (filters: ScheduleFilters) => void
 }
 
 type CalendarOverlay =
@@ -63,12 +67,6 @@ type CalendarOverlay =
   | { name: 'filters' }
   | { name: 'legend' }
   | null
-
-type CalendarFilters = {
-  bookings: boolean
-  events: boolean
-  meals: boolean
-}
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MAX_VISIBLE_WORK_LANES = 2
@@ -105,13 +103,10 @@ function MonthCalendar({
   onViewBooking,
   onViewEvent,
   showMealOverlay,
+  filters,
+  onFiltersChange,
 }: MonthCalendarProps) {
   const [overlay, setOverlay] = useState<CalendarOverlay>(null)
-  const [filters, setFilters] = useState<CalendarFilters>({
-    bookings: true,
-    events: true,
-    meals: true,
-  })
   const touchStart = useRef<{ x: number; y: number } | null>(null)
   const didSwipe = useRef(false)
   const days = useMemo(() => buildMonthGrid(month), [month])
@@ -121,10 +116,6 @@ function MonthCalendar({
   const clientById = useMemo(
     () => new Map(clients.map((client) => [client.id, client])),
     [clients],
-  )
-  const petById = useMemo(
-    () => new Map(pets.map((pet) => [pet.id, pet])),
-    [pets],
   )
   const areaById = useMemo(
     () => new Map(areas.map((area) => [area.id, area])),
@@ -384,9 +375,9 @@ function MonthCalendar({
         <CalendarBottomSheet title="Calendar filters" onClose={() => setOverlay(null)}>
           <p className="calendar-sheet-intro">Choose what appears in this Calendar. Saved records are unchanged.</p>
           <div className="calendar-filter-list">
-            <label><span><strong>Bookings</strong><small>Client work and recurring instances</small></span><input type="checkbox" checked={filters.bookings} onChange={(event) => setFilters((current) => ({ ...current, bookings: event.target.checked }))} /></label>
-            <label><span><strong>General Events</strong><small>Personal and non-client commitments</small></span><input type="checkbox" checked={filters.events} onChange={(event) => setFilters((current) => ({ ...current, events: event.target.checked }))} /></label>
-            <label className={!showMealOverlay ? 'disabled' : ''}><span><strong>Meal Overlay</strong><small>{showMealOverlay ? 'Meals and prep dates' : 'Disabled in Settings'}</small></span><input type="checkbox" checked={showMealOverlay && filters.meals} disabled={!showMealOverlay} onChange={(event) => setFilters((current) => ({ ...current, meals: event.target.checked }))} /></label>
+            <label><span><strong>Bookings</strong><small>Client work and recurring instances</small></span><input type="checkbox" checked={filters.bookings} onChange={(event) => onFiltersChange({ ...filters, bookings: event.target.checked })} /></label>
+            <label><span><strong>General Events</strong><small>Personal and non-client commitments</small></span><input type="checkbox" checked={filters.events} onChange={(event) => onFiltersChange({ ...filters, events: event.target.checked })} /></label>
+            <label className={!showMealOverlay ? 'disabled' : ''}><span><strong>Meal Overlay</strong><small>{showMealOverlay ? 'Meals and prep dates' : 'Disabled in Settings'}</small></span><input type="checkbox" checked={showMealOverlay && filters.meals} disabled={!showMealOverlay} onChange={(event) => onFiltersChange({ ...filters, meals: event.target.checked })} /></label>
           </div>
         </CalendarBottomSheet>
       )}
@@ -438,44 +429,31 @@ function MonthCalendar({
         )
       })()}
 
-      {selectedBooking !== undefined && (() => {
-        const client = clientById.get(selectedBooking.clientId)
-        const area = areaById.get(selectedBooking.areaId)
-        const petNames = selectedBooking.petIds.map((id) => petById.get(id)?.name ?? 'Unknown pet').join(', ')
-        const serviceNames = selectedBooking.serviceIds.map((id) => serviceById.get(id)?.name ?? 'Unknown service').join(', ')
-        return (
-          <CalendarBottomSheet title={client?.name ?? 'Booking'} onClose={() => setOverlay(null)}>
-            <dl className="calendar-quick-details">
-              <div><dt>Dates</dt><dd>{formatBookingDateRange(selectedBooking.startDate, selectedBooking.endDate)}</dd></div>
-              <div><dt>Area</dt><dd>{area?.name ?? 'Unknown area'}</dd></div>
-              <div><dt>Pets</dt><dd>{petNames}</dd></div>
-              <div><dt>Services</dt><dd>{serviceNames}</dd></div>
-              <div><dt>Status</dt><dd>{selectedBooking.status}</dd></div>
-            </dl>
-            <div className="calendar-sheet-actions">
-              <button className="primary-button" type="button" onClick={() => onViewBooking(selectedBooking.id)}>View Details</button>
-              <button className="secondary-button" type="button" onClick={() => onEditBooking(selectedBooking.id)}>Edit</button>
-            </div>
-          </CalendarBottomSheet>
-        )
-      })()}
+      {selectedBooking !== undefined && (
+        <ScheduleQuickDetailSheet
+          areas={areas}
+          booking={selectedBooking}
+          clients={clients}
+          pets={pets}
+          services={services}
+          onClose={() => setOverlay(null)}
+          onViewDetails={() => onViewBooking(selectedBooking.id)}
+          onEdit={() => onEditBooking(selectedBooking.id)}
+        />
+      )}
 
-      {selectedEvent !== undefined && (() => {
-        const area = selectedEvent.areaId === undefined ? undefined : areaById.get(selectedEvent.areaId)
-        return (
-          <CalendarBottomSheet title={selectedEvent.title} onClose={() => setOverlay(null)}>
-            <dl className="calendar-quick-details">
-              <div><dt>Dates</dt><dd>{formatBookingDateRange(selectedEvent.startDate, selectedEvent.endDate)}</dd></div>
-              <div><dt>Area</dt><dd>{area?.name ?? 'No area'}</dd></div>
-              <div><dt>Notes</dt><dd>{selectedEvent.notes || 'Not provided'}</dd></div>
-            </dl>
-            <div className="calendar-sheet-actions">
-              <button className="primary-button" type="button" onClick={() => onViewEvent(selectedEvent.id)}>View Details</button>
-              <button className="secondary-button" type="button" onClick={() => onEditEvent(selectedEvent.id)}>Edit</button>
-            </div>
-          </CalendarBottomSheet>
-        )
-      })()}
+      {selectedEvent !== undefined && (
+        <ScheduleQuickDetailSheet
+          areas={areas}
+          event={selectedEvent}
+          clients={clients}
+          pets={pets}
+          services={services}
+          onClose={() => setOverlay(null)}
+          onViewDetails={() => onViewEvent(selectedEvent.id)}
+          onEdit={() => onEditEvent(selectedEvent.id)}
+        />
+      )}
     </div>
   )
 }

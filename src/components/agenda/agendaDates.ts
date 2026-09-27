@@ -1,6 +1,8 @@
 import type { Booking, GeneralEvent } from '../../Types'
 
-export const AGENDA_WINDOW_DAYS = 30
+export const AGENDA_INITIAL_PAST_DAYS = 90
+export const AGENDA_INITIAL_FUTURE_DAYS = 365
+export const AGENDA_RANGE_STEP_DAYS = 365
 
 function parseDateOnly(date: string): Date {
   return new Date(`${date}T00:00:00.000Z`)
@@ -20,58 +22,68 @@ export function addDays(date: string, days: number): string {
   return toDateString(shiftedDate)
 }
 
-export function getUpcomingBookings(
-  bookings: Booking[],
-  today: string,
-  windowDays = AGENDA_WINDOW_DAYS,
-): Booking[] {
-  const windowEnd = addDays(today, windowDays)
+export function getAgendaRange(today: string) {
+  return {
+    startDate: addDays(today, -AGENDA_INITIAL_PAST_DAYS),
+    endDate: addDays(today, AGENDA_INITIAL_FUTURE_DAYS),
+  }
+}
 
+export function getAgendaBookings(
+  bookings: Booking[],
+  rangeStart: string,
+  rangeEnd: string,
+): Booking[] {
   return bookings
     .filter(
       (booking) =>
         booking.status !== 'Cancelled' &&
-        booking.startDate >= today &&
-        booking.startDate <= windowEnd,
+        booking.startDate <= rangeEnd &&
+        booking.endDate >= rangeStart,
     )
-    .sort(
-      (left, right) =>
-        left.startDate.localeCompare(right.startDate) ||
-        left.endDate.localeCompare(right.endDate) ||
-        left.id.localeCompare(right.id),
-    )
+    .sort(compareScheduleDates)
 }
 
-export function getUpcomingEvents(
+export function getAgendaEvents(
   events: GeneralEvent[],
-  today: string,
-  windowDays = AGENDA_WINDOW_DAYS,
+  rangeStart: string,
+  rangeEnd: string,
 ): GeneralEvent[] {
-  const windowEnd = addDays(today, windowDays)
-
   return events
     .filter(
       (event) =>
-        event.startDate >= today && event.startDate <= windowEnd,
+        event.startDate <= rangeEnd && event.endDate >= rangeStart,
     )
-    .sort(
-      (left, right) =>
-        left.startDate.localeCompare(right.startDate) ||
-        left.endDate.localeCompare(right.endDate) ||
-        left.id.localeCompare(right.id),
-    )
+    .sort(compareScheduleDates)
 }
 
-export function formatGroupDate(date: string, today: string): string {
-  const label = new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
+function compareScheduleDates(
+  left: { id: string; startDate: string; endDate: string },
+  right: { id: string; startDate: string; endDate: string },
+) {
+  return left.startDate.localeCompare(right.startDate) ||
+    left.endDate.localeCompare(right.endDate) ||
+    left.id.localeCompare(right.id)
+}
+
+export function getMonthKey(date: string): string {
+  return date.slice(0, 7)
+}
+
+export function formatMonthHeading(monthKey: string): string {
+  return new Intl.DateTimeFormat(undefined, {
     month: 'long',
-    day: 'numeric',
     year: 'numeric',
     timeZone: 'UTC',
-  }).format(parseDateOnly(date))
+  }).format(parseDateOnly(`${monthKey}-01`))
+}
 
-  return date === today ? `Today · ${label}` : label
+export function formatTodayDivider(date: string): string {
+  return `Today · ${new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(parseDateOnly(date))}`
 }
 
 export function formatBookingDateRange(
@@ -89,4 +101,12 @@ export function formatBookingDateRange(
   if (startDate === endDate) return startLabel
 
   return `${startLabel} – ${formatter.format(parseDateOnly(endDate))}`
+}
+
+export function normalizeAgendaSearch(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase()
+    .trim()
 }

@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from 'react'
+import { useEffect, useMemo, type CSSProperties, type ReactNode } from 'react'
 import type {
   Area,
   Booking,
@@ -7,29 +7,66 @@ import type {
   Pet,
   Service,
 } from '../../Types'
+import type { ScheduleFilters } from '../../Types/ScheduleFilters'
 import { getTodayDateString } from '../calendar/calendarDates'
 import {
-  AGENDA_WINDOW_DAYS,
-  addDays,
   formatBookingDateRange,
-  formatGroupDate,
-  getUpcomingBookings,
-  getUpcomingEvents,
+  formatMonthHeading,
+  formatTodayDivider,
+  getAgendaBookings,
+  getAgendaEvents,
+  getMonthKey,
+  normalizeAgendaSearch,
 } from './agendaDates'
 
-type AgendaItem =
-  | { kind: 'booking'; booking: Booking }
-  | { kind: 'event'; event: GeneralEvent }
+type BookingAgendaItem = {
+  kind: 'booking'
+  id: string
+  startDate: string
+  endDate: string
+  area?: Area
+  booking: Booking
+  clientName: string
+  petNames: string[]
+  serviceNames: string[]
+  searchText: string
+}
+
+type EventAgendaItem = {
+  kind: 'event'
+  id: string
+  startDate: string
+  endDate: string
+  area?: Area
+  event: GeneralEvent
+  searchText: string
+}
+
+type AgendaItem = BookingAgendaItem | EventAgendaItem
 
 type AgendaListProps = {
   areas: Area[]
   bookings: Booking[]
   clients: Client[]
   events: GeneralEvent[]
+  filters: ScheduleFilters
   pets: Pet[]
+  rangeEnd: string
+  rangeStart: string
+  searchQuery: string
   services: Service[]
   onOpenBooking: (bookingId: string) => void
   onOpenEvent: (eventId: string) => void
+  onShowEarlier: () => void
+  onShowLater: () => void
+}
+
+function TodayDivider({ today }: { today: string }) {
+  return (
+    <div className="agenda-today-divider" id="agenda-today" role="separator">
+      <span>{formatTodayDivider(today)}</span>
+    </div>
+  )
 }
 
 function AgendaList({
@@ -37,15 +74,18 @@ function AgendaList({
   bookings,
   clients,
   events,
+  filters,
   pets,
+  rangeEnd,
+  rangeStart,
+  searchQuery,
   services,
   onOpenBooking,
   onOpenEvent,
+  onShowEarlier,
+  onShowLater,
 }: AgendaListProps) {
   const today = getTodayDateString()
-  const windowEnd = addDays(today, AGENDA_WINDOW_DAYS)
-  const upcomingBookings = getUpcomingBookings(bookings, today)
-  const upcomingEvents = getUpcomingEvents(events, today)
   const clientById = useMemo(
     () => new Map(clients.map((client) => [client.id, client])),
     [clients],
@@ -62,135 +102,279 @@ function AgendaList({
     () => new Map(services.map((service) => [service.id, service])),
     [services],
   )
-  const groups = new Map<string, AgendaItem[]>()
+  const normalizedQuery = normalizeAgendaSearch(searchQuery)
 
-  upcomingBookings.forEach((booking) => {
-    const dateBookings = groups.get(booking.startDate) ?? []
-    dateBookings.push({ kind: 'booking', booking })
-    groups.set(booking.startDate, dateBookings)
-  })
+  const items = useMemo(() => {
+    const agendaItems: AgendaItem[] = []
 
-  upcomingEvents.forEach((event) => {
-    const dateItems = groups.get(event.startDate) ?? []
-    dateItems.push({ kind: 'event', event })
-    groups.set(event.startDate, dateItems)
-  })
+    if (filters.bookings) {
+      getAgendaBookings(bookings, rangeStart, rangeEnd).forEach((booking) => {
+        const clientName = clientById.get(booking.clientId)?.name ?? 'Unknown client'
+        const petNames = booking.petIds.map(
+          (id) => petById.get(id)?.name ?? 'Unknown pet',
+        )
+        const serviceNames = booking.serviceIds.map(
+          (id) => serviceById.get(id)?.name ?? 'Unknown service',
+        )
+        const area = areaById.get(booking.areaId)
+        const searchText = normalizeAgendaSearch([
+          clientName,
+          ...petNames,
+          area?.name,
+          ...serviceNames,
+          booking.notes,
+          booking.status,
+        ].filter(Boolean).join(' '))
 
-  const groupedItems = Array.from(groups.entries())
-    .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+        agendaItems.push({
+          kind: 'booking',
+          id: booking.id,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          area,
+          booking,
+          clientName,
+          petNames,
+          serviceNames,
+          searchText,
+        })
+      })
+    }
 
-  if (upcomingBookings.length === 0 && upcomingEvents.length === 0) {
+    if (filters.events) {
+      getAgendaEvents(events, rangeStart, rangeEnd).forEach((event) => {
+        const area = event.areaId === undefined
+          ? undefined
+          : areaById.get(event.areaId)
+        const searchText = normalizeAgendaSearch([
+          event.title,
+          area?.name,
+          event.notes,
+        ].filter(Boolean).join(' '))
+
+        agendaItems.push({
+          kind: 'event',
+          id: event.id,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          area,
+          event,
+          searchText,
+        })
+      })
+    }
+
+    return agendaItems
+      .filter((item) => normalizedQuery === '' || item.searchText.includes(normalizedQuery))
+      .sort(
+        (left, right) =>
+          left.startDate.localeCompare(right.startDate) ||
+          left.endDate.localeCompare(right.endDate) ||
+          left.kind.localeCompare(right.kind) ||
+          left.id.localeCompare(right.id),
+      )
+  }, [
+    areaById,
+    bookings,
+    clientById,
+    events,
+    filters.bookings,
+    filters.events,
+    normalizedQuery,
+    petById,
+    rangeEnd,
+    rangeStart,
+    serviceById,
+  ])
+
+  const groupedItems = useMemo(() => {
+    const groups = new Map<string, AgendaItem[]>()
+    items.forEach((item) => {
+      const monthKey = getMonthKey(item.startDate)
+      const monthItems = groups.get(monthKey)
+      if (monthItems === undefined) groups.set(monthKey, [item])
+      else monthItems.push(item)
+    })
+    return Array.from(groups.entries())
+  }, [items])
+
+  const firstFutureItem = items.find((item) => item.startDate >= today)
+  const todayMonth = getMonthKey(today)
+  const dividerBeforeMonth = firstFutureItem !== undefined &&
+    getMonthKey(firstFutureItem.startDate) > todayMonth
+      ? getMonthKey(firstFutureItem.startDate)
+      : undefined
+  const dividerBeforeItem = firstFutureItem !== undefined &&
+    getMonthKey(firstFutureItem.startDate) === todayMonth
+      ? `${firstFutureItem.kind}-${firstFutureItem.id}`
+      : undefined
+
+  useEffect(() => {
+    document.getElementById('agenda-today')?.scrollIntoView({ block: 'start' })
+  }, [])
+
+  if (items.length === 0) {
+    const filtersActive = !filters.bookings || !filters.events
+    const title = normalizedQuery !== ''
+      ? 'No results match your search'
+      : filtersActive
+        ? 'No visible schedule items'
+        : 'No schedule in this range'
+
     return (
-      <div className="empty-state agenda-empty-state">
-        <h3>No upcoming bookings or events</h3>
-        <p>
-          There is nothing scheduled between today and the next{' '}
-          {AGENDA_WINDOW_DAYS} days.
-        </p>
-      </div>
+      <>
+        <TodayDivider today={today} />
+        <div className="empty-state agenda-empty-state">
+          <h3>{title}</h3>
+          <p>
+            {normalizedQuery !== ''
+              ? 'Try another search or clear it to restore the filtered schedule.'
+              : filtersActive
+                ? 'One or more Agenda filters are hiding schedule types.'
+                : 'Use the range controls to browse earlier or later dates.'}
+          </p>
+        </div>
+        <AgendaRangeControls
+          rangeStart={rangeStart}
+          rangeEnd={rangeEnd}
+          onShowEarlier={onShowEarlier}
+          onShowLater={onShowLater}
+        />
+      </>
     )
   }
 
   return (
     <div className="agenda-groups">
-      {groupedItems.map(([date, dateItems]) => {
-        const groupId = `agenda-date-${date}`
+      {groupedItems.map(([monthKey, monthItems]) => {
+        const monthId = `agenda-month-${monthKey}`
+        const content: ReactNode[] = []
 
-        return (
-          <section className="agenda-group" aria-labelledby={groupId} key={date}>
-            <h3 id={groupId}>{formatGroupDate(date, today)}</h3>
+        if (dividerBeforeMonth === monthKey) {
+          content.push(<TodayDivider today={today} key="today-divider" />)
+        }
+
+        content.push(
+          <section className="agenda-month" aria-labelledby={monthId} key={monthKey}>
+            <h3 className="agenda-month-heading" id={monthId}>
+              {formatMonthHeading(monthKey)}
+            </h3>
             <div className="agenda-list">
-              {dateItems.map((item) => {
-                if (item.kind === 'event') {
-                  const event = item.event
-                  const area = event.areaId === undefined
-                    ? undefined
-                    : areaById.get(event.areaId)
-                  const areaColor = area?.color ?? '#81767b'
-                  const style = {
-                    '--agenda-area-color': areaColor,
-                  } as CSSProperties
-
-                  return (
-                    <article
-                      className="agenda-card agenda-event-card"
-                      style={style}
-                      key={`event-${event.id}`}
-                    >
-                      <button
-                        className="agenda-card-main"
-                        type="button"
-                        onClick={() => onOpenEvent(event.id)}
-                        aria-label={`Open ${event.title} event, ${formatBookingDateRange(event.startDate, event.endDate)}`}
-                      >
-                        <span className="agenda-card-heading">
-                          <strong>{event.title}</strong>
-                          <span className="event-badge">Event</span>
-                        </span>
-                        <span className="agenda-date-range">
-                          {formatBookingDateRange(event.startDate, event.endDate)}
-                        </span>
-                        <span className="agenda-area">
-                          <span className="agenda-area-dot" aria-hidden="true" />
-                          {area?.name ?? 'No area'}
-                        </span>
-                      </button>
-                    </article>
-                  )
-                }
-
-                const booking = item.booking
-                const clientName =
-                  clientById.get(booking.clientId)?.name ?? 'Unknown client'
-                const petNames = booking.petIds
-                  .map((id) => petById.get(id)?.name ?? 'Unknown pet')
-                  .join(', ')
-                const serviceNames = booking.serviceIds
-                  .map((id) => serviceById.get(id)?.name ?? 'Unknown service')
-                  .join(', ')
-                const area = areaById.get(booking.areaId)
-                const areaColor = area?.color ?? '#a89b96'
-                const style = {
-                  '--agenda-area-color': areaColor,
-                } as CSSProperties
-
+              {monthItems.map((item) => {
+                const itemKey = `${item.kind}-${item.id}`
                 return (
-                  <article className="agenda-card" style={style} key={`booking-${booking.id}`}>
-                    <button
-                      className="agenda-card-main"
-                      type="button"
-                      onClick={() => onOpenBooking(booking.id)}
-                      aria-label={`Open ${clientName} booking, ${formatBookingDateRange(booking.startDate, booking.endDate)}`}
-                    >
-                      <span className="agenda-card-heading">
-                        <strong>{clientName}</strong>
-                        <span className={`status-badge status-${booking.status.toLowerCase()}`}>
-                          {booking.status}
-                        </span>
-                      </span>
-                      <span className="agenda-date-range">
-                        {formatBookingDateRange(booking.startDate, booking.endDate)}
-                      </span>
-                      <span className="agenda-card-meta">
-                        <span>{petNames}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{serviceNames}</span>
-                      </span>
-                      <span className="agenda-area">
-                        <span className="agenda-area-dot" aria-hidden="true" />
-                        {area?.name ?? 'Unknown area'}
-                      </span>
-                    </button>
-                  </article>
+                  <div className="agenda-item-wrap" key={itemKey}>
+                    {dividerBeforeItem === itemKey && <TodayDivider today={today} />}
+                    <AgendaCard
+                      item={item}
+                      isPast={item.endDate < today}
+                      onOpenBooking={onOpenBooking}
+                      onOpenEvent={onOpenEvent}
+                    />
+                  </div>
                 )
               })}
             </div>
-          </section>
+          </section>,
         )
+
+        return content
       })}
-      <p className="agenda-window-note">
-        Showing the schedule through {formatBookingDateRange(windowEnd, windowEnd)}.
-      </p>
+      {firstFutureItem === undefined && <TodayDivider today={today} />}
+      <AgendaRangeControls
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        onShowEarlier={onShowEarlier}
+        onShowLater={onShowLater}
+      />
+    </div>
+  )
+}
+
+function AgendaCard({
+  item,
+  isPast,
+  onOpenBooking,
+  onOpenEvent,
+}: {
+  item: AgendaItem
+  isPast: boolean
+  onOpenBooking: (bookingId: string) => void
+  onOpenEvent: (eventId: string) => void
+}) {
+  const areaColor = item.area?.color ?? (item.kind === 'event' ? '#81767b' : '#a89b96')
+  const style = { '--agenda-area-color': areaColor } as CSSProperties
+
+  if (item.kind === 'event') {
+    return (
+      <article className={`agenda-card agenda-event-card${isPast ? ' past' : ''}`} style={style}>
+        <button
+          className="agenda-card-main"
+          type="button"
+          onClick={() => onOpenEvent(item.event.id)}
+          aria-label={`Open ${item.event.title} event, ${formatBookingDateRange(item.startDate, item.endDate)}`}
+        >
+          <span className="agenda-date-range">{formatBookingDateRange(item.startDate, item.endDate)}</span>
+          <span className="agenda-card-heading">
+            <strong>{item.event.title}</strong>
+            <span className="event-badge">Event</span>
+          </span>
+          <span className="agenda-area">
+            <span className="agenda-area-dot" aria-hidden="true" />
+            {item.area?.name ?? 'No area'}
+          </span>
+          {item.event.notes && <span className="agenda-notes">{item.event.notes}</span>}
+        </button>
+      </article>
+    )
+  }
+
+  return (
+    <article className={`agenda-card${isPast ? ' past' : ''}`} style={style}>
+      <button
+        className="agenda-card-main"
+        type="button"
+        onClick={() => onOpenBooking(item.booking.id)}
+        aria-label={`Open ${item.clientName} booking, ${formatBookingDateRange(item.startDate, item.endDate)}`}
+      >
+        <span className="agenda-date-range">{formatBookingDateRange(item.startDate, item.endDate)}</span>
+        <span className="agenda-card-heading">
+          <strong>{item.clientName}</strong>
+          <span className={`status-badge status-${item.booking.status.toLowerCase()}`}>
+            {item.booking.status}
+          </span>
+        </span>
+        <span className="agenda-area">
+          <span className="agenda-area-dot" aria-hidden="true" />
+          {item.area?.name ?? 'Unknown area'}
+        </span>
+        <span className="agenda-card-meta">
+          <span>{item.petNames.join(' • ')}</span>
+          <span>{item.serviceNames.join(' • ')}</span>
+        </span>
+      </button>
+    </article>
+  )
+}
+
+function AgendaRangeControls({
+  rangeStart,
+  rangeEnd,
+  onShowEarlier,
+  onShowLater,
+}: {
+  rangeStart: string
+  rangeEnd: string
+  onShowEarlier: () => void
+  onShowLater: () => void
+}) {
+  return (
+    <div className="agenda-range-controls">
+      <p>Showing {formatBookingDateRange(rangeStart, rangeEnd)}</p>
+      <div>
+        <button className="secondary-button" type="button" onClick={onShowEarlier}>Show earlier</button>
+        <button className="secondary-button" type="button" onClick={onShowLater}>Show later</button>
+      </div>
     </div>
   )
 }
