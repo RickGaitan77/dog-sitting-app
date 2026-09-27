@@ -3,6 +3,7 @@ import type { Meal } from '../../Types'
 import type { NewEntity } from '../../services'
 
 type MealFormProps = {
+  initialDate?: string
   isSaving: boolean
   meal?: Meal
   onCancel: () => void
@@ -32,12 +33,13 @@ function parseTags(value: string): string[] {
 function MealForm({
   isSaving,
   meal,
+  initialDate,
   onCancel,
   onSubmit,
 }: MealFormProps) {
   const [errors, setErrors] = useState<string[]>([])
   const [values, setValues] = useState<MealFormValues>({
-    date: meal?.date ?? '',
+    date: meal?.date ?? initialDate ?? '',
     name: meal?.name ?? '',
     mealType: meal?.mealType ?? '',
     prepDate: meal?.prepDate ?? '',

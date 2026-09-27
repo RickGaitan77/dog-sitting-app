@@ -2,8 +2,21 @@ import { useCallback, useEffect, useState } from 'react'
 import MealDetail from '../components/meals/MealDetail'
 import MealForm from '../components/meals/MealForm'
 import MealList from '../components/meals/MealList'
+import WeeklyMealPlanner from '../components/meals/WeeklyMealPlanner'
+import {
+  getMealWeekStart,
+  moveMealWeek,
+} from '../components/meals/mealWeekDates'
+import { getTodayDateString } from '../components/calendar/calendarDates'
 import { appServices, type NewEntity } from '../services'
-import type { Meal } from '../Types'
+import type {
+  Area,
+  Booking,
+  Client,
+  GeneralEvent,
+  Meal,
+  Service,
+} from '../Types'
 
 type MealsScreenProps = {
   mealCreationRequested: boolean
@@ -11,22 +24,38 @@ type MealsScreenProps = {
   onMealCreationHandled: () => void
 }
 
+type MealReturnView = 'planner' | 'list'
+
 type MealView =
+  | { name: 'planner' }
   | { name: 'list' }
-  | { name: 'create' }
-  | { name: 'detail'; mealId: string }
-  | { name: 'edit'; mealId: string }
+  | { name: 'create'; initialDate?: string; returnTo: MealReturnView }
+  | { name: 'detail'; mealId: string; returnTo: MealReturnView }
+  | { name: 'edit'; mealId: string; returnTo: MealReturnView }
+
+function returnView(name: MealReturnView): MealView {
+  return { name }
+}
 
 function MealsScreen({
   mealCreationRequested,
   mealOpenRequested,
   onMealCreationHandled,
 }: MealsScreenProps) {
+  const today = getTodayDateString()
   const [meals, setMeals] = useState<Meal[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [clients, setClients] = useState<Client[]>([])
+  const [events, setEvents] = useState<GeneralEvent[]>([])
+  const [areas, setAreas] = useState<Area[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [displayedWeekStart, setDisplayedWeekStart] = useState(
+    () => getMealWeekStart(today),
+  )
   const [view, setView] = useState<MealView>(() =>
     mealOpenRequested === null
-      ? { name: 'list' }
-      : { name: 'detail', mealId: mealOpenRequested },
+      ? { name: 'planner' }
+      : { name: 'detail', mealId: mealOpenRequested, returnTo: 'planner' },
   )
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -46,8 +75,22 @@ function MealsScreen({
   useEffect(() => {
     let isCurrent = true
 
-    void appServices.meals.getAll()
-      .then((storedMeals) => {
+    void Promise.all([
+      appServices.meals.getAll(),
+      appServices.repositories.bookings.getAll(),
+      appServices.repositories.clients.getAll(),
+      appServices.repositories.generalEvents.getAll(),
+      appServices.areas.getAll(),
+      appServices.services.getAll(),
+    ])
+      .then(([
+        storedMeals,
+        storedBookings,
+        storedClients,
+        storedEvents,
+        storedAreas,
+        storedServices,
+      ]) => {
         if (!isCurrent) return
         setMeals(
           storedMeals.sort(
@@ -56,11 +99,16 @@ function MealsScreen({
               left.name.localeCompare(right.name),
           ),
         )
+        setBookings(storedBookings)
+        setClients(storedClients)
+        setEvents(storedEvents)
+        setAreas(storedAreas)
+        setServices(storedServices)
       })
       .catch((loadError: unknown) => {
         if (isCurrent) {
-          console.error('Failed to load meals', loadError)
-          setError('Meals could not be loaded. Please try again.')
+          console.error('Failed to load weekly meal planner', loadError)
+          setError('The weekly meal planner could not be loaded. Please try again.')
         }
       })
       .finally(() => {
@@ -73,7 +121,7 @@ function MealsScreen({
   }, [])
 
   const effectiveView: MealView = mealCreationRequested
-    ? { name: 'create' }
+    ? { name: 'create', returnTo: 'planner' }
     : view
   const selectedMeal =
     effectiveView.name === 'detail' || effectiveView.name === 'edit'
@@ -83,9 +131,13 @@ function MealsScreen({
   const closeMealForm = () => {
     setError(null)
     if (effectiveView.name === 'edit' && selectedMeal !== undefined) {
-      setView({ name: 'detail', mealId: selectedMeal.id })
-    } else {
-      setView({ name: 'list' })
+      setView({
+        name: 'detail',
+        mealId: selectedMeal.id,
+        returnTo: effectiveView.returnTo,
+      })
+    } else if (effectiveView.name === 'create') {
+      setView(returnView(effectiveView.returnTo))
     }
     if (mealCreationRequested) onMealCreationHandled()
   }
@@ -99,9 +151,13 @@ function MealsScreen({
         effectiveView.name === 'edit' && selectedMeal !== undefined
           ? await appServices.meals.update(selectedMeal.id, input)
           : await appServices.meals.create(input)
+      const returnTo =
+        effectiveView.name === 'create' || effectiveView.name === 'edit'
+          ? effectiveView.returnTo
+          : 'planner'
 
       await loadMeals()
-      setView({ name: 'detail', mealId: savedMeal.id })
+      setView({ name: 'detail', mealId: savedMeal.id, returnTo })
       if (mealCreationRequested) onMealCreationHandled()
     } catch (saveError: unknown) {
       console.error('Failed to save meal', saveError)
@@ -132,7 +188,7 @@ function MealsScreen({
     }
   }
 
-  const deleteMeal = async (meal: Meal) => {
+  const deleteMeal = async (meal: Meal, returnTo: MealReturnView) => {
     if (!window.confirm('Delete this meal? This cannot be undone.')) return
 
     setIsSaving(true)
@@ -141,7 +197,7 @@ function MealsScreen({
     try {
       await appServices.meals.delete(meal.id)
       await loadMeals()
-      setView({ name: 'list' })
+      setView(returnView(returnTo))
     } catch (deleteError: unknown) {
       console.error('Failed to delete meal', deleteError)
       setError('The meal could not be deleted. Please try again.')
@@ -151,7 +207,7 @@ function MealsScreen({
   }
 
   if (isLoading) {
-    return <p className="status-message">Loading meals…</p>
+    return <p className="status-message">Loading weekly meal planner…</p>
   }
 
   if (effectiveView.name === 'create' || effectiveView.name === 'edit') {
@@ -159,8 +215,9 @@ function MealsScreen({
       <section className="meal-screen">
         {error !== null && <p className="error-message">{error}</p>}
         <MealForm
-          key={selectedMeal?.id ?? 'new-meal'}
+          key={selectedMeal?.id ?? `new-meal-${effectiveView.name === 'create' ? effectiveView.initialDate ?? 'open' : 'edit'}`}
           meal={selectedMeal}
+          initialDate={effectiveView.name === 'create' ? effectiveView.initialDate : undefined}
           isSaving={isSaving}
           onCancel={closeMealForm}
           onSubmit={saveMeal}
@@ -177,14 +234,21 @@ function MealsScreen({
         isSaving={isSaving}
         onBack={() => {
           setError(null)
-          setView({ name: 'list' })
+          setView(returnView(effectiveView.returnTo))
         }}
-        onEdit={() => setView({ name: 'edit', mealId: selectedMeal.id })}
-        onDelete={() => void deleteMeal(selectedMeal)}
+        onEdit={() => setView({
+          name: 'edit',
+          mealId: selectedMeal.id,
+          returnTo: effectiveView.returnTo,
+        })}
+        onDelete={() => void deleteMeal(selectedMeal, effectiveView.returnTo)}
         onTogglePrep={() => void togglePrep(selectedMeal)}
       />
     )
   }
+
+  const activeView: MealReturnView =
+    effectiveView.name === 'list' ? 'list' : 'planner'
 
   return (
     <section className="meal-screen">
@@ -193,16 +257,68 @@ function MealsScreen({
           <p className="eyebrow">Local meal plan</p>
           <h2>Meals</h2>
         </div>
-        <button className="primary-button" type="button" onClick={() => setView({ name: 'create' })}>Add meal</button>
+        <div className="button-row meal-view-actions">
+          <button
+            className={activeView === 'planner' ? 'secondary-button active' : 'text-button'}
+            type="button"
+            onClick={() => setView({ name: 'planner' })}
+          >
+            Week
+          </button>
+          <button
+            className={activeView === 'list' ? 'secondary-button active' : 'text-button'}
+            type="button"
+            onClick={() => setView({ name: 'list' })}
+          >
+            All Meals
+          </button>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => setView({ name: 'create', returnTo: activeView })}
+          >
+            Add Meal
+          </button>
+        </div>
       </div>
 
       {error !== null && <p className="error-message">{error}</p>}
 
-      <MealList
-        meals={meals}
-        onAddMeal={() => setView({ name: 'create' })}
-        onOpenMeal={(mealId) => setView({ name: 'detail', mealId })}
-      />
+      {activeView === 'planner' ? (
+        <WeeklyMealPlanner
+          areas={areas}
+          bookings={bookings}
+          clients={clients}
+          events={events}
+          meals={meals}
+          services={services}
+          today={today}
+          weekStart={displayedWeekStart}
+          onAddMeal={(date) => setView({
+            name: 'create',
+            initialDate: date,
+            returnTo: 'planner',
+          })}
+          onCurrentWeek={() => setDisplayedWeekStart(getMealWeekStart(today))}
+          onNextWeek={() => setDisplayedWeekStart((current) => moveMealWeek(current, 1))}
+          onOpenMeal={(mealId) => setView({
+            name: 'detail',
+            mealId,
+            returnTo: 'planner',
+          })}
+          onPreviousWeek={() => setDisplayedWeekStart((current) => moveMealWeek(current, -1))}
+        />
+      ) : (
+        <MealList
+          meals={meals}
+          onAddMeal={() => setView({ name: 'create', returnTo: 'list' })}
+          onOpenMeal={(mealId) => setView({
+            name: 'detail',
+            mealId,
+            returnTo: 'list',
+          })}
+        />
+      )}
     </section>
   )
 }
