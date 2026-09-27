@@ -8,6 +8,7 @@ import {
   type BrowserNotificationPermission,
 } from '../services'
 import type { AppSettings } from '../Types'
+import AreasManager from '../components/areas/AreasManager'
 
 type ReminderSettingKey =
   | 'weeklyOverviewEnabled'
@@ -76,6 +77,7 @@ type PendingRestore = {
 }
 
 function SettingsScreen() {
+  const [view, setView] = useState<'settings' | 'areas'>('settings')
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [permission, setPermission] = useState<BrowserNotificationPermission>(
     getBrowserNotificationPermission,
@@ -231,6 +233,10 @@ function SettingsScreen() {
     return <p className="status-message">Loading settings…</p>
   }
 
+  if (view === 'areas') {
+    return <AreasManager onBack={() => setView('settings')} />
+  }
+
   return (
     <section className="settings-screen">
       <div className="view-heading settings-heading">
@@ -243,10 +249,10 @@ function SettingsScreen() {
       {error !== null && <p className="error-message">{error}</p>}
 
       {settings !== null && (
-        <section className="settings-card" aria-labelledby="calendar-settings-title">
+        <section className="settings-card" aria-labelledby="scheduling-settings-title">
           <div className="settings-section-heading">
-            <h3 id="calendar-settings-title">Calendar</h3>
-            <p>Choose which planning details appear in the month view.</p>
+            <h3 id="scheduling-settings-title">Scheduling</h3>
+            <p>Manage Calendar display and the Areas used by clients, bookings, and events.</p>
           </div>
 
           <div className="settings-list">
@@ -264,6 +270,17 @@ function SettingsScreen() {
                 }
               />
             </label>
+            <button
+              className="settings-link-row"
+              type="button"
+              onClick={() => setView('areas')}
+            >
+              <span>
+                <strong>Areas &amp; Colors</strong>
+                <small>Create, reorder, recolor, archive, or restore scheduling Areas.</small>
+              </span>
+              <span aria-hidden="true">›</span>
+            </button>
           </div>
         </section>
       )}

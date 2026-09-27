@@ -1,5 +1,4 @@
 import type {
-  Area,
   Client,
   Pet,
   Service,
@@ -19,6 +18,7 @@ import { MealService } from './mealService'
 import { AttachmentService } from './attachmentService'
 import { ReminderService } from './reminderService'
 import { BackupService } from './backupService'
+import { AreaService } from './areaService'
 import { db, type DogSittingDatabase } from '../db'
 
 export class AppServices {
@@ -26,7 +26,7 @@ export class AppServices {
   readonly clients: EntityService<Client>
   readonly pets: EntityService<Pet>
   readonly bookings: BookingService
-  readonly areas: EntityService<Area>
+  readonly areas: AreaService
   readonly services: EntityService<Service>
   readonly generalEvents: GeneralEventService
   readonly meals: MealService
@@ -44,7 +44,7 @@ export class AppServices {
     this.clients = new EntityService(repositories.clients, idFactory)
     this.pets = new EntityService(repositories.pets, idFactory)
     this.bookings = new BookingService(repositories, idFactory)
-    this.areas = new EntityService(repositories.areas, idFactory)
+    this.areas = new AreaService(repositories, database, idFactory)
     this.services = new EntityService(repositories.services, idFactory)
     this.generalEvents = new GeneralEventService(
       repositories,

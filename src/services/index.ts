@@ -1,5 +1,11 @@
 export { AppServices, appServices } from './appServices'
 export {
+  AreaService,
+  AreaValidationError,
+  normalizeAreaName,
+} from './areaService'
+export type { AreaInput } from './areaService'
+export {
   AttachmentFileNotFoundError,
   AttachmentService,
   AttachmentValidationError,

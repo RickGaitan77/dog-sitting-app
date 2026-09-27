@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import type { Area, Client } from '../../Types'
 import type { NewEntity } from '../../services'
 
@@ -38,6 +38,12 @@ function ClientForm({ areas, client, isSaving, onCancel, onSubmit }: ClientFormP
     emergencyContact: client?.emergencyContact ?? '',
     veterinarianInfo: client?.veterinarianInfo ?? '',
   })
+  const areaOptions = useMemo(
+    () => areas.filter(
+      (area) => !area.archived || area.id === client?.areaId,
+    ),
+    [areas, client?.areaId],
+  )
 
   const updateValue = (field: keyof ClientFormValues, value: string) => {
     setValues((currentValues) => ({ ...currentValues, [field]: value }))
@@ -104,7 +110,11 @@ function ClientForm({ areas, client, isSaving, onCancel, onSubmit }: ClientFormP
           Area
           <select value={values.areaId} onChange={(event) => updateValue('areaId', event.target.value)}>
             <option value="">No area selected</option>
-            {areas.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}
+            {areaOptions.map((area) => (
+              <option key={area.id} value={area.id}>
+                {area.name}{area.archived ? ' (archived)' : ''}
+              </option>
+            ))}
           </select>
         </label>
         <label className="full-width-field">

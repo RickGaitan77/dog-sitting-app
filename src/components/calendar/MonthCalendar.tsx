@@ -15,6 +15,7 @@ import {
   type CalendarMonth,
 } from './calendarDates'
 import { buildMealCalendarItems } from './mealCalendarItems'
+import { getReadableTextColor } from '../../utils/areaColors'
 
 type MonthCalendarProps = {
   month: CalendarMonth
@@ -175,6 +176,7 @@ function MonthCalendar({
                   const areaColor = areaById.get(booking.areaId)?.color ?? '#a89b96'
                   const style = {
                     '--booking-color': areaColor,
+                    '--booking-text-color': getReadableTextColor(areaColor),
                   } as CSSProperties
 
                   return (
@@ -200,6 +202,7 @@ function MonthCalendar({
                     : areaById.get(event.areaId)?.color ?? '#81767b'
                   const style = {
                     '--event-color': areaColor,
+                    '--event-text-color': getReadableTextColor(areaColor),
                   } as CSSProperties
 
                   return (

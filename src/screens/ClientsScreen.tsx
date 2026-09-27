@@ -40,7 +40,7 @@ function ClientsScreen() {
 
     void Promise.all([
       appServices.repositories.clients.getActive(),
-      appServices.repositories.areas.getActive(),
+      appServices.areas.getAll(),
     ])
       .then(([activeClients, activeAreas]) => {
         if (isCurrent) {
