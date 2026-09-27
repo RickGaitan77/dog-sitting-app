@@ -1,4 +1,6 @@
-const CACHE_NAME = 'dog-sitting-shell-v1'
+const CACHE_NAME = 'dog-sitting-shell-v2'
+const REMINDER_DELIVERY_CACHE = 'dog-sitting-reminder-delivery-v1'
+const REMINDER_STATE_MESSAGE_TYPE = 'DOG_SITTING_REMINDER_STATE'
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
@@ -17,6 +19,7 @@ const CACHEABLE_DESTINATIONS = new Set([
   'font',
   'manifest',
 ])
+let reminderMessageQueue = Promise.resolve()
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -85,4 +88,104 @@ self.addEventListener('fetch', (event) => {
   if (CACHEABLE_DESTINATIONS.has(request.destination)) {
     event.respondWith(handleStaticAsset(request))
   }
+})
+
+function isReminderStateMessage(value) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    value.type === REMINDER_STATE_MESSAGE_TYPE &&
+    typeof value.date === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(value.date) &&
+    Array.isArray(value.notifications) &&
+    value.notifications.every(
+      (notification) =>
+        typeof notification === 'object' &&
+        notification !== null &&
+        typeof notification.id === 'string' &&
+        notification.id !== '' &&
+        typeof notification.title === 'string' &&
+        typeof notification.body === 'string' &&
+        notification.date === value.date,
+    )
+  )
+}
+
+function deliveryRequest(reminderId) {
+  return new Request(
+    `${self.location.origin}/__dog-sitting-reminder-delivery/${encodeURIComponent(reminderId)}`,
+  )
+}
+
+async function pruneOldReminderDeliveries(cache, date) {
+  const requests = await cache.keys()
+
+  await Promise.all(
+    requests.map(async (request) => {
+      const response = await cache.match(request)
+      if (response?.headers.get('X-Reminder-Date') !== date) {
+        await cache.delete(request)
+      }
+    }),
+  )
+}
+
+async function deliverReminderState(message) {
+  const cache = await caches.open(REMINDER_DELIVERY_CACHE)
+  await pruneOldReminderDeliveries(cache, message.date)
+
+  for (const notification of message.notifications) {
+    const request = deliveryRequest(notification.id)
+    if ((await cache.match(request)) !== undefined) continue
+
+    await cache.put(
+      request,
+      new Response('', {
+        headers: { 'X-Reminder-Date': notification.date },
+      }),
+    )
+
+    try {
+      await self.registration.showNotification(notification.title, {
+        body: notification.body,
+        tag: notification.id,
+        icon: '/pwa/icon-192.png',
+        badge: '/pwa/icon-192.png',
+        renotify: false,
+        data: { url: '/' },
+      })
+    } catch (error) {
+      await cache.delete(request)
+      console.error('Failed to deliver reminder notification', error)
+    }
+  }
+}
+
+self.addEventListener('message', (event) => {
+  if (!isReminderStateMessage(event.data)) return
+
+  reminderMessageQueue = reminderMessageQueue
+    .then(() => deliverReminderState(event.data))
+    .catch((error) => {
+      console.error('Failed to process reminder state', error)
+    })
+  event.waitUntil(reminderMessageQueue)
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const targetUrl = new URL(event.notification.data?.url ?? '/', self.location.origin)
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windowClients) => {
+        const existingClient = windowClients.find(
+          (client) => new URL(client.url).origin === targetUrl.origin,
+        )
+
+        if (existingClient !== undefined) return existingClient.focus()
+        return self.clients.openWindow(targetUrl.href)
+      }),
+  )
 })

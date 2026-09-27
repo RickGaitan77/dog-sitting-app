@@ -21,7 +21,7 @@ function ReminderCenter() {
       if (!isCurrent) return
       setSnapshot(nextSnapshot)
       setError(null)
-      showBrowserNotifications(nextSnapshot.reminders)
+      void showBrowserNotifications(nextSnapshot)
     }
 
     const subscription = liveQuery(() =>
@@ -49,12 +49,17 @@ function ReminderCenter() {
       DATE_CHECK_INTERVAL_MS,
     )
     window.addEventListener('focus', refreshForDateChange)
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refreshForDateChange()
+    }
+    document.addEventListener('visibilitychange', refreshWhenVisible)
 
     return () => {
       isCurrent = false
       subscription.unsubscribe()
       window.clearInterval(intervalId)
       window.removeEventListener('focus', refreshForDateChange)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
     }
   }, [])
 

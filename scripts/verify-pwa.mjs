@@ -10,6 +10,10 @@ const registration = await readFile(
   new URL('src/pwa/registerServiceWorker.ts', root),
   'utf8',
 )
+const reminderMessages = await readFile(
+  new URL('src/pwa/reminderMessages.ts', root),
+  'utf8',
+)
 const serviceWorker = await readFile(new URL('public/sw.js', root), 'utf8')
 
 function assert(condition, message) {
@@ -65,5 +69,20 @@ assert(registration.includes('import.meta.env.PROD'), 'Service worker must be pr
 assert(registration.includes("register('/sw.js')"), 'Service worker path is invalid.')
 assert(serviceWorker.includes("caches.match('/index.html')"), 'Offline shell fallback is missing.')
 assert(!serviceWorker.includes('skipWaiting'), 'Service worker must not force an active-session update.')
+assert(
+  reminderMessages.includes("REMINDER_STATE_MESSAGE_TYPE = 'DOG_SITTING_REMINDER_STATE'") &&
+    serviceWorker.includes("REMINDER_STATE_MESSAGE_TYPE = 'DOG_SITTING_REMINDER_STATE'"),
+  'Reminder message contract does not match the service worker.',
+)
+assert(
+  serviceWorker.includes("addEventListener('notificationclick'") &&
+    serviceWorker.includes('existingClient.focus()') &&
+    serviceWorker.includes('clients.openWindow'),
+  'Notification click focus/open behavior is missing.',
+)
+assert(
+  serviceWorker.includes('dog-sitting-reminder-delivery-v1'),
+  'Persistent reminder delivery deduplication is missing.',
+)
 
 console.log('PWA manifest, icons, metadata, registration, and offline shell checks passed.')

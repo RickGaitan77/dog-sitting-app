@@ -272,8 +272,8 @@ function SettingsScreen() {
         <div className="settings-section-heading">
           <h3 id="notification-permission-title">Browser notifications</h3>
           <p>
-            Optional notifications can appear while this app is running. Closed-app
-            delivery requires the later PWA stage.
+            Native reminders are checked when the app opens or resumes. Delivery
+            while fully closed depends on browser and device support and is not guaranteed.
           </p>
         </div>
         <div className="permission-row">
