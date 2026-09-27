@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import {
   appServices,
   getBrowserNotificationPermission,
+  parseBackupFile,
   requestBrowserNotificationPermission,
+  type BackupDocument,
   type BrowserNotificationPermission,
 } from '../services'
 import type { AppSettings } from '../Types'
@@ -59,6 +61,18 @@ function permissionLabel(permission: BrowserNotificationPermission): string {
   }
 }
 
+function formatBackupDate(value: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value))
+}
+
+type PendingRestore = {
+  document: BackupDocument
+  fileName: string
+}
+
 function SettingsScreen() {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [permission, setPermission] = useState<BrowserNotificationPermission>(
@@ -66,6 +80,10 @@ function SettingsScreen() {
   )
   const [isSaving, setIsSaving] = useState(false)
   const [isRequestingPermission, setIsRequestingPermission] = useState(false)
+  const [isDataBusy, setIsDataBusy] = useState(false)
+  const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null)
+  const [backupMessage, setBackupMessage] = useState<string | null>(null)
+  const [backupError, setBackupError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -118,6 +136,92 @@ function SettingsScreen() {
       setError('Browser notification permission could not be requested.')
     } finally {
       setIsRequestingPermission(false)
+    }
+  }
+
+  const createBackup = async () => {
+    setIsDataBusy(true)
+    setBackupMessage(null)
+    setBackupError(null)
+
+    try {
+      const backup = await appServices.backups.createBackup()
+      const url = URL.createObjectURL(backup.file)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = backup.fileName
+      document.body.append(link)
+
+      try {
+        link.click()
+      } finally {
+        link.remove()
+        window.setTimeout(() => URL.revokeObjectURL(url), 0)
+      }
+
+      const updatedSettings = await appServices.backups.markBackupSuccessful(
+        backup.document.manifest.createdAt,
+      )
+      setSettings(updatedSettings)
+      setBackupMessage(`Backup created: ${backup.fileName}`)
+    } catch (backupFailure: unknown) {
+      console.error('Failed to create backup', backupFailure)
+      setBackupError(
+        backupFailure instanceof Error
+          ? backupFailure.message
+          : 'The backup could not be created. Please try again.',
+      )
+    } finally {
+      setIsDataBusy(false)
+    }
+  }
+
+  const selectRestoreFile = async (file: File | undefined) => {
+    setPendingRestore(null)
+    setBackupMessage(null)
+    setBackupError(null)
+    if (file === undefined) return
+
+    setIsDataBusy(true)
+    try {
+      const document = await parseBackupFile(file)
+      setPendingRestore({ document, fileName: file.name })
+      setBackupMessage(`Backup validated: ${file.name}`)
+    } catch (validationFailure: unknown) {
+      console.error('Failed to validate backup', validationFailure)
+      setBackupError(
+        validationFailure instanceof Error
+          ? validationFailure.message
+          : 'The selected file is not a valid backup.',
+      )
+    } finally {
+      setIsDataBusy(false)
+    }
+  }
+
+  const restoreBackup = async () => {
+    if (pendingRestore === null) return
+
+    const confirmed = window.confirm(
+      'Restore this backup? All current local app data will be replaced by the selected backup.',
+    )
+    if (!confirmed) return
+
+    setIsDataBusy(true)
+    setBackupMessage(null)
+    setBackupError(null)
+    try {
+      await appServices.backups.restore(pendingRestore.document)
+      setBackupMessage('Restore complete. Reloading the app…')
+      window.setTimeout(() => window.location.reload(), 800)
+    } catch (restoreFailure: unknown) {
+      console.error('Failed to restore backup', restoreFailure)
+      setBackupError(
+        restoreFailure instanceof Error
+          ? restoreFailure.message
+          : 'The backup could not be restored. Current data was preserved.',
+      )
+      setIsDataBusy(false)
     }
   }
 
@@ -195,6 +299,69 @@ function SettingsScreen() {
             This browser does not support native notifications. In-app reminders
             will continue to work.
           </p>
+        )}
+      </section>
+
+      <section className="settings-card backup-settings-card" aria-labelledby="backup-settings-title">
+        <div className="settings-section-heading">
+          <h3 id="backup-settings-title">Data &amp; Backup</h3>
+          <p>
+            Data stays on this device unless you download a backup. Backup files
+            contain private client and business information and may include documents
+            and images.
+          </p>
+        </div>
+
+        <div className="backup-actions">
+          <button
+            className="primary-button"
+            type="button"
+            disabled={isDataBusy}
+            onClick={() => void createBackup()}
+          >
+            {isDataBusy ? 'Working…' : 'Create Backup'}
+          </button>
+
+          <label className={`secondary-button backup-file-button${isDataBusy ? ' disabled' : ''}`}>
+            Choose Backup File
+            <input
+              type="file"
+              accept="application/json,.json"
+              disabled={isDataBusy}
+              onChange={(event) =>
+                void selectRestoreFile(event.target.files?.[0])
+              }
+            />
+          </label>
+
+          {pendingRestore !== null && (
+            <button
+              className="danger-button"
+              type="button"
+              disabled={isDataBusy}
+              onClick={() => void restoreBackup()}
+            >
+              Restore Backup
+            </button>
+          )}
+        </div>
+
+        <p className="last-backup-note">
+          Last successful backup:{' '}
+          {settings?.lastBackupAt === undefined
+            ? 'No backup recorded'
+            : formatBackupDate(settings.lastBackupAt)}
+        </p>
+        {pendingRestore !== null && (
+          <p className="selected-backup-name">
+            Selected file: <strong>{pendingRestore.fileName}</strong>
+          </p>
+        )}
+        {backupMessage !== null && (
+          <p className="backup-success" role="status">{backupMessage}</p>
+        )}
+        {backupError !== null && (
+          <p className="error-message backup-error" role="alert">{backupError}</p>
         )}
       </section>
     </section>

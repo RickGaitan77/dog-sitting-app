@@ -43,3 +43,19 @@ export {
   showBrowserNotifications,
 } from './browserNotificationService'
 export type { BrowserNotificationPermission } from './browserNotificationService'
+export {
+  BACKUP_FILE_TYPE,
+  BACKUP_FORMAT_VERSION,
+  BackupService,
+  BackupValidationError,
+  parseBackupFile,
+  validateBackupDocument,
+} from './backupService'
+export type {
+  BackupAttachmentBlob,
+  BackupData,
+  BackupDocument,
+  BackupManifest,
+  BackupRecordCounts,
+  CreatedBackup,
+} from './backupService'

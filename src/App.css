@@ -299,6 +299,55 @@
   font-size: 0.84rem;
 }
 
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.backup-file-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.backup-file-button.disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.backup-file-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.last-backup-note,
+.selected-backup-name,
+.backup-success {
+  margin-top: 12px;
+  color: #66585c;
+  font-size: 0.82rem;
+}
+
+.backup-success {
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: #dff0e4;
+  color: #2f6d43;
+  font-weight: 650;
+}
+
+.backup-error {
+  margin-bottom: 0;
+}
+
 .clients-screen h2,
 .clients-screen h3 {
   margin: 0;
@@ -1463,6 +1512,12 @@
   }
 
   .permission-row .primary-button {
+    width: 100%;
+  }
+
+  .backup-actions > button,
+  .backup-actions > label {
+    box-sizing: border-box;
     width: 100%;
   }
 

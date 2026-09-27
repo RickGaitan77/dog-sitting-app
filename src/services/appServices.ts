@@ -18,6 +18,8 @@ import { GeneralEventService } from './generalEventService'
 import { MealService } from './mealService'
 import { AttachmentService } from './attachmentService'
 import { ReminderService } from './reminderService'
+import { BackupService } from './backupService'
+import { db, type DogSittingDatabase } from '../db'
 
 export class AppServices {
   readonly repositories: AppRepositories
@@ -30,11 +32,13 @@ export class AppServices {
   readonly meals: MealService
   readonly attachments: AttachmentService
   readonly reminders: ReminderService
+  readonly backups: BackupService
   readonly settings: AppRepositories['settings']
 
   constructor(
     repositories: AppRepositories,
     idFactory: IdFactory = createEntityId,
+    database: DogSittingDatabase = db,
   ) {
     this.repositories = repositories
     this.clients = new EntityService(repositories.clients, idFactory)
@@ -49,6 +53,7 @@ export class AppServices {
     this.meals = new MealService(repositories, idFactory)
     this.attachments = new AttachmentService(repositories, idFactory)
     this.reminders = new ReminderService(repositories)
+    this.backups = new BackupService(database)
     this.settings = repositories.settings
   }
 }
