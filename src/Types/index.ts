@@ -23,3 +23,12 @@ export type {
 } from './Attachment'
 
 export type { AppSettings } from './Settings'
+
+export type {
+  Reminder,
+  ReminderSnapshot,
+  ReminderSourceData,
+  ReminderType,
+  WeeklyOverview,
+  WeeklyOverviewItem,
+} from './Reminder'

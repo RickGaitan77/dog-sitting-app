@@ -3,6 +3,7 @@ import './App.css'
 import AppHeader from './components/AppHeader'
 import BottomNav from './components/BottomNav'
 import FloatingAddButton from './components/FloatingAddButton'
+import ReminderCenter from './components/reminders/ReminderCenter'
 import { screenRegistry } from './config/screenRegistry'
 import type { AppScreen } from './Types/AppScreen'
 
@@ -30,6 +31,7 @@ function App() {
       />
 
       <div className="app-content">
+        {activeTab !== 'Settings' && <ReminderCenter />}
         {screenRegistry[activeTab]({
           bookingCreationRequested,
           eventCreationRequested,

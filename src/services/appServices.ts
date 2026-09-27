@@ -17,6 +17,7 @@ import { BookingService } from './bookingService'
 import { GeneralEventService } from './generalEventService'
 import { MealService } from './mealService'
 import { AttachmentService } from './attachmentService'
+import { ReminderService } from './reminderService'
 
 export class AppServices {
   readonly repositories: AppRepositories
@@ -28,6 +29,7 @@ export class AppServices {
   readonly generalEvents: GeneralEventService
   readonly meals: MealService
   readonly attachments: AttachmentService
+  readonly reminders: ReminderService
   readonly settings: AppRepositories['settings']
 
   constructor(
@@ -46,6 +48,7 @@ export class AppServices {
     )
     this.meals = new MealService(repositories, idFactory)
     this.attachments = new AttachmentService(repositories, idFactory)
+    this.reminders = new ReminderService(repositories)
     this.settings = repositories.settings
   }
 }
