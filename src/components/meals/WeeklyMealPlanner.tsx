@@ -179,6 +179,12 @@ function WeeklyMealPlanner({
 
               <section className="meal-day-plan" aria-label={`Meals for ${day.date}`}>
                 <span className="meal-day-section-label">Meals</span>
+                {planningMode && dayMeals.length === 0 && (
+                  <p className="meal-unplanned-prompt">
+                    <strong>Meal not planned</strong>
+                    <span>Add a Meal for this day.</span>
+                  </p>
+                )}
                 {dayMeals.map((meal) => {
                   const prepState = getMealPrepState(meal, today)
                   return (

@@ -1468,8 +1468,24 @@
 }
 
 .meal-day-card.unplanned-highlight {
-  border-color: #d69b4b;
-  background: #fff9ed;
+  border: 2px solid #c97e2f;
+  background: #fff7e8;
+  box-shadow: 0 7px 20px rgba(151, 91, 31, 0.16);
+}
+
+.planning-mode .meal-day-card.today:not(.unplanned-highlight) {
+  border-color: #e4d7d1;
+  box-shadow: 0 4px 14px rgba(65, 45, 50, 0.06);
+}
+
+.meal-day-card.unplanned-highlight .meal-day-heading {
+  border-bottom-color: #e7c792;
+  background: #f9e7c8;
+}
+
+.meal-day-card.unplanned-highlight .meal-day-plan {
+  border-top-color: #ead1a8;
+  background: #fff8eb;
 }
 
 .meal-day-heading {
@@ -1512,8 +1528,14 @@
   padding: 11px 13px;
 }
 
+.meal-day-schedule {
+  background: #fbf7f4;
+}
+
 .meal-day-plan {
   border-top: 1px solid #eee3dd;
+  padding-block: 13px;
+  background: white;
 }
 
 .meal-day-section-label {
@@ -1538,11 +1560,10 @@
   align-items: center;
   gap: 6px;
   border-left: 3px solid var(--schedule-color);
-  border-radius: 6px;
-  padding: 5px 7px;
-  background: #f8f4f1;
-  color: #66585c;
-  font-size: 0.75rem;
+  padding: 3px 0 3px 8px;
+  background: transparent;
+  color: #796c70;
+  font-size: 0.72rem;
 }
 
 .meal-schedule-item.event {
@@ -1564,21 +1585,33 @@
 }
 
 .meal-schedule-item strong {
-  color: #41373a;
+  color: #625559;
+  font-weight: 650;
 }
 
 .weekly-meal-entry {
   width: 100%;
   display: grid;
-  gap: 7px;
-  border: 1px solid #e1d3cc;
-  border-radius: 11px;
-  padding: 10px;
-  background: white;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  padding: 3px 0 10px;
+  background: transparent;
   color: #574b4e;
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.weekly-meal-entry + .weekly-meal-entry {
+  border-top: 1px solid #eadfd8;
+  padding-top: 12px;
+}
+
+.weekly-meal-entry:focus-visible {
+  border-radius: 6px;
+  outline: 3px solid rgba(169, 79, 114, 0.28);
+  outline-offset: 3px;
 }
 
 .weekly-meal-entry-heading {
@@ -1589,8 +1622,10 @@
 }
 
 .weekly-meal-entry-heading strong {
-  color: #342d2f;
-  font-size: 0.96rem;
+  color: #30282b;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .weekly-meal-entry-heading > span {
@@ -1605,6 +1640,26 @@
 .meal-tags.compact > span {
   padding: 2px 7px;
   font-size: 0.68rem;
+}
+
+.meal-unplanned-prompt {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  border-left: 4px solid #c97e2f;
+  border-radius: 7px;
+  padding: 8px 10px;
+  background: #fff0d2;
+}
+
+.meal-unplanned-prompt strong {
+  color: #754616;
+  font-size: 0.82rem;
+}
+
+.meal-unplanned-prompt span {
+  color: #856541;
+  font-size: 0.72rem;
 }
 
 .weekly-prep-state {
@@ -1667,6 +1722,13 @@
   font-size: 0.82rem;
   font-weight: 750;
   cursor: pointer;
+}
+
+.planning-mode .unplanned-highlight .add-day-meal-button {
+  border: 2px dashed #b66b22;
+  background: #fff4df;
+  color: #84490f;
+  box-shadow: 0 2px 8px rgba(151, 91, 31, 0.1);
 }
 
 .add-another-meal {
