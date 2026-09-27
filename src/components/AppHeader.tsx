@@ -1,3 +1,5 @@
+import { APP_DISPLAY_NAME } from '../config/appMetadata'
+
 type AppHeaderProps = {
   isSettingsOpen: boolean
   onOpenSettings: () => void
@@ -11,7 +13,7 @@ function AppHeader({
 }: AppHeaderProps) {
   return (
     <header className="app-header">
-      <h1>Dog Sitting App</h1>
+      <h1>{APP_DISPLAY_NAME}</h1>
 
       {isSettingsOpen ? (
         <button className="settings-button" onClick={onBack}>
