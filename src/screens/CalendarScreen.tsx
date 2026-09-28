@@ -10,6 +10,7 @@ import {
 import {
   appServices,
   BOOKING_STATUSES,
+  type AreaInput,
   type NewEntity,
   type WeeklyRecurrenceInput,
 } from '../services'
@@ -239,6 +240,12 @@ function CalendarScreen({
     }
   }
 
+  const createAreaFromBooking = async (input: AreaInput): Promise<Area> => {
+    const savedArea = await appServices.areas.create(input)
+    setAreas(await appServices.areas.getAll())
+    return savedArea
+  }
+
   const saveEvent = async (input: NewEntity<GeneralEvent>) => {
     setIsSaving(true)
     setError(null)
@@ -375,6 +382,7 @@ function CalendarScreen({
         <BookingForm
           key={selectedBooking?.id ?? `new-booking-${effectiveView.name === 'create' ? effectiveView.initialDate ?? 'open' : 'edit'}`}
           booking={selectedBooking}
+          bookings={bookings}
           initialDate={effectiveView.name === 'create' ? effectiveView.initialDate : undefined}
           clients={clients}
           pets={pets}
@@ -382,6 +390,7 @@ function CalendarScreen({
           services={services}
           isSaving={isSaving}
           onCancel={closeBookingForm}
+          onCreateArea={createAreaFromBooking}
           onSubmit={saveBooking}
         />
       </section>

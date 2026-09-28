@@ -14,6 +14,7 @@ import GeneralEventForm from '../components/events/GeneralEventForm'
 import {
   appServices,
   BOOKING_STATUSES,
+  type AreaInput,
   type NewEntity,
 } from '../services'
 import type {
@@ -172,6 +173,12 @@ function AgendaScreen({ filters, onFiltersChange }: AgendaScreenProps) {
     }
   }
 
+  const createAreaFromBooking = async (input: AreaInput): Promise<Area> => {
+    const savedArea = await appServices.areas.create(input)
+    setAreas(await appServices.areas.getAll())
+    return savedArea
+  }
+
   const saveEvent = async (input: NewEntity<GeneralEvent>) => {
     if (view.name !== 'event-edit' || selectedEvent === undefined) return
 
@@ -288,11 +295,13 @@ function AgendaScreen({ filters, onFiltersChange }: AgendaScreenProps) {
         <BookingForm
           key={selectedBooking.id}
           booking={selectedBooking}
+          bookings={bookings}
           clients={clients}
           pets={pets}
           areas={areas}
           services={services}
           isSaving={isSaving}
+          onCreateArea={createAreaFromBooking}
           onCancel={() => {
             setError(null)
             setView({ name: 'detail', bookingId: selectedBooking.id })
