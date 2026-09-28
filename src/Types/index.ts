@@ -7,7 +7,7 @@ export type {
 
 export type { Client } from './Client'
 
-export type { Pet } from './Pet'
+export type { Pet, PetImportantCare } from './Pet'
 
 export type { Area } from './Area'
 

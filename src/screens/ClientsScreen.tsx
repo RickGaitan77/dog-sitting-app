@@ -9,15 +9,12 @@ import {
   matchesClientSearch,
 } from '../components/clients/clientDirectory'
 import ClientForm from '../components/clients/ClientForm'
+import PetDetail from '../components/clients/PetDetail'
 import PetForm from '../components/clients/PetForm'
 import { appServices, type NewEntity } from '../services'
 import type { Area, Booking, Client, Pet, Service } from '../Types'
 
 type ClientFormMode = 'create' | 'edit' | null
-
-function valueOrFallback(value: string | undefined): string {
-  return value === undefined || value === '' ? 'Not provided' : value
-}
 
 function PetThumbnail({ pet }: { pet: Pet }) {
   const [hasError, setHasError] = useState(false)
@@ -351,24 +348,15 @@ function ClientsScreen() {
           )}
 
           {petBeingEdited === null && selectedPet !== null && (
-            <article className="pet-card client-selected-pet">
-              <div className="pet-card-heading">
-                <div><p className="eyebrow">Pet details</p><h3>{selectedPet.name}</h3></div>
-                <div className="button-row">
-                  <button className="text-button" type="button" onClick={() => setSelectedPet(null)}>Close</button>
-                  <button className="text-button" type="button" onClick={() => setPetBeingEdited(selectedPet)}>Edit</button>
-                  <button className="text-button danger-text" type="button" onClick={() => void archivePet(selectedPet)} disabled={isSaving}>Archive</button>
-                </div>
-              </div>
-              <dl className="pet-details">
-                <div><dt>Feeding</dt><dd>{valueOrFallback(selectedPet.feedingInstructions)}</dd></div>
-                <div><dt>Medication</dt><dd>{valueOrFallback(selectedPet.medication)}</dd></div>
-                <div><dt>Behavior</dt><dd>{valueOrFallback(selectedPet.behaviorInfo)}</dd></div>
-                <div><dt>Care notes</dt><dd>{valueOrFallback(selectedPet.careNotes)}</dd></div>
-                <div><dt>Special instructions</dt><dd>{valueOrFallback(selectedPet.specialInstructions)}</dd></div>
-              </dl>
-              <AttachmentSection ownerType="Pet" ownerId={selectedPet.id} ownerName={selectedPet.name} />
-            </article>
+            <PetDetail
+              key={`${selectedPet.id}:${selectedPet.photoUrl ?? ''}`}
+              client={selectedClient}
+              pet={selectedPet}
+              isSaving={isSaving}
+              onClose={() => setSelectedPet(null)}
+              onEdit={setPetBeingEdited}
+              onArchive={(pet) => void archivePet(pet)}
+            />
           )}
         </section>
 

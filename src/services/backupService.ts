@@ -114,6 +114,19 @@ function isClient(value: unknown): value is Client {
     isOptionalString(value.veterinarianInfo)
 }
 
+function isPetImportantCare(value: unknown): boolean {
+  if (value === undefined) return true
+  if (!isObject(value)) return false
+
+  return [
+    value.feeding,
+    value.medication,
+    value.behavior,
+    value.careNotes,
+    value.specialInstructions,
+  ].every((flag) => flag === undefined || typeof flag === 'boolean')
+}
+
 function isPet(value: unknown): value is Pet {
   return isObject(value) &&
     isString(value.id) &&
@@ -127,7 +140,8 @@ function isPet(value: unknown): value is Pet {
     isOptionalString(value.medication) &&
     isOptionalString(value.behaviorInfo) &&
     isOptionalString(value.careNotes) &&
-    isOptionalString(value.specialInstructions)
+    isOptionalString(value.specialInstructions) &&
+    isPetImportantCare(value.importantCare)
 }
 
 function isBooking(value: unknown): value is Booking {

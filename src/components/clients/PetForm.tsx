@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import type { Pet } from '../../Types'
+import type { Pet, PetImportantCare } from '../../Types'
 import type { NewEntity } from '../../services'
 
 type PetFormProps = {
@@ -29,6 +29,13 @@ function optionalValue(value: string): string | undefined {
 
 function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) {
   const [nameError, setNameError] = useState(false)
+  const [importantCare, setImportantCare] = useState<Required<PetImportantCare>>({
+    feeding: pet?.importantCare?.feeding ?? false,
+    medication: pet?.importantCare?.medication ?? false,
+    behavior: pet?.importantCare?.behavior ?? false,
+    careNotes: pet?.importantCare?.careNotes ?? false,
+    specialInstructions: pet?.importantCare?.specialInstructions ?? false,
+  })
   const [values, setValues] = useState<PetFormValues>({
     name: pet?.name ?? '',
     species: pet?.species ?? '',
@@ -43,6 +50,10 @@ function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) 
 
   const updateValue = (field: keyof PetFormValues, value: string) => {
     setValues((currentValues) => ({ ...currentValues, [field]: value }))
+  }
+
+  const updateImportantCare = (field: keyof PetImportantCare, value: boolean) => {
+    setImportantCare((currentValues) => ({ ...currentValues, [field]: value }))
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -65,6 +76,7 @@ function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) 
       behaviorInfo: optionalValue(values.behaviorInfo),
       careNotes: optionalValue(values.careNotes),
       specialInstructions: optionalValue(values.specialInstructions),
+      importantCare: Object.values(importantCare).some(Boolean) ? importantCare : undefined,
       archived: pet?.archived ?? false,
     })
   }
@@ -106,26 +118,46 @@ function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) 
           Photo reference
           <input value={values.photoUrl} onChange={(event) => updateValue('photoUrl', event.target.value)} placeholder="URL or local reference" />
         </label>
-        <label className="full-width-field">
-          Feeding instructions
-          <textarea rows={3} value={values.feedingInstructions} onChange={(event) => updateValue('feedingInstructions', event.target.value)} />
-        </label>
-        <label className="full-width-field">
-          Medication
-          <textarea rows={3} value={values.medication} onChange={(event) => updateValue('medication', event.target.value)} />
-        </label>
-        <label className="full-width-field">
-          Behavior information
-          <textarea rows={3} value={values.behaviorInfo} onChange={(event) => updateValue('behaviorInfo', event.target.value)} />
-        </label>
-        <label className="full-width-field">
-          Care notes
-          <textarea rows={3} value={values.careNotes} onChange={(event) => updateValue('careNotes', event.target.value)} />
-        </label>
-        <label className="full-width-field">
-          Special instructions
-          <textarea rows={3} value={values.specialInstructions} onChange={(event) => updateValue('specialInstructions', event.target.value)} />
-        </label>
+        <div className="full-width-field pet-care-editor">
+          <label htmlFor="pet-feeding-instructions">Feeding instructions</label>
+          <textarea id="pet-feeding-instructions" rows={3} value={values.feedingInstructions} onChange={(event) => updateValue('feedingInstructions', event.target.value)} />
+          <label className="pet-important-toggle">
+            <input type="checkbox" checked={importantCare.feeding} onChange={(event) => updateImportantCare('feeding', event.target.checked)} />
+            Mark Feeding as Important
+          </label>
+        </div>
+        <div className="full-width-field pet-care-editor">
+          <label htmlFor="pet-medication">Medication</label>
+          <textarea id="pet-medication" rows={3} value={values.medication} onChange={(event) => updateValue('medication', event.target.value)} />
+          <label className="pet-important-toggle">
+            <input type="checkbox" checked={importantCare.medication} onChange={(event) => updateImportantCare('medication', event.target.checked)} />
+            Mark Medication as Important
+          </label>
+        </div>
+        <div className="full-width-field pet-care-editor">
+          <label htmlFor="pet-behavior-information">Behavior information</label>
+          <textarea id="pet-behavior-information" rows={3} value={values.behaviorInfo} onChange={(event) => updateValue('behaviorInfo', event.target.value)} />
+          <label className="pet-important-toggle">
+            <input type="checkbox" checked={importantCare.behavior} onChange={(event) => updateImportantCare('behavior', event.target.checked)} />
+            Mark Behavior as Important
+          </label>
+        </div>
+        <div className="full-width-field pet-care-editor">
+          <label htmlFor="pet-care-notes">Care notes</label>
+          <textarea id="pet-care-notes" rows={3} value={values.careNotes} onChange={(event) => updateValue('careNotes', event.target.value)} />
+          <label className="pet-important-toggle">
+            <input type="checkbox" checked={importantCare.careNotes} onChange={(event) => updateImportantCare('careNotes', event.target.checked)} />
+            Mark Care Notes as Important
+          </label>
+        </div>
+        <div className="full-width-field pet-care-editor">
+          <label htmlFor="pet-special-instructions">Special instructions</label>
+          <textarea id="pet-special-instructions" rows={3} value={values.specialInstructions} onChange={(event) => updateValue('specialInstructions', event.target.value)} />
+          <label className="pet-important-toggle">
+            <input type="checkbox" checked={importantCare.specialInstructions} onChange={(event) => updateImportantCare('specialInstructions', event.target.checked)} />
+            Mark Special Instructions as Important
+          </label>
+        </div>
       </div>
 
       <div className="form-actions">

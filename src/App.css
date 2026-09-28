@@ -1403,6 +1403,215 @@
   white-space: pre-wrap;
 }
 
+.pet-detail-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e5d7d0;
+  border-radius: 14px;
+  background: #fffdfb;
+  box-shadow: 0 4px 14px rgba(65, 45, 50, 0.06);
+}
+
+.pet-detail-identity {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-bottom: 1px solid #eadfd8;
+  background: #fff8f4;
+}
+
+.pet-detail-photo {
+  box-sizing: border-box;
+  width: 88px;
+  height: 88px;
+  display: block;
+  border: 1px solid #dfd0c9;
+  border-radius: 18px;
+  object-fit: cover;
+  background: #f1e7e2;
+}
+
+.pet-detail-identity-copy,
+.pet-detail-header-actions {
+  min-width: 0;
+}
+
+.pet-detail-identity-copy h3,
+.pet-detail-kind,
+.pet-detail-client {
+  overflow-wrap: anywhere;
+}
+
+.pet-detail-identity-copy h3 {
+  color: #342d2f;
+  font-size: 1.28rem;
+}
+
+.pet-detail-kind,
+.pet-detail-client {
+  margin: 4px 0 0;
+  color: #74676a;
+  font-size: 0.82rem;
+}
+
+.pet-detail-client strong {
+  color: #55494d;
+}
+
+.pet-detail-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pet-care-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+}
+
+.pet-care-section {
+  min-width: 0;
+  border: 1px solid #e7dbd5;
+  border-left: 4px solid #d2c1ba;
+  border-radius: 11px;
+  padding: 12px;
+  background: white;
+}
+
+.pet-care-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.pet-care-section h4 {
+  margin: 0;
+  color: #514549;
+  font-size: 0.88rem;
+}
+
+.pet-care-section p {
+  margin: 7px 0 0;
+  color: #4b4144;
+  line-height: 1.48;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.pet-care-section .pet-care-empty {
+  color: #897b7f;
+  font-size: 0.82rem;
+}
+
+.pet-medication-section {
+  border-left-color: #986581;
+  background: #fffafd;
+}
+
+.pet-care-important {
+  border-color: #d49a43;
+  border-left-width: 6px;
+  background: #fff9ed;
+}
+
+.pet-medication-section.pet-care-important {
+  border-color: #c47b28;
+  border-left-width: 6px;
+  background: #fff5e5;
+}
+
+.pet-important-badge {
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #d69a3e;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: #ffe8b8;
+  color: #724a0d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.pet-care-empty-summary {
+  grid-column: 1 / -1;
+  padding-block: 10px;
+  background: #fcf8f5;
+}
+
+.pet-care-empty-summary ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 7px 0 0;
+  padding: 0;
+  color: #897b7f;
+  font-size: 0.8rem;
+  list-style: none;
+}
+
+.pet-care-empty-summary li::before {
+  content: '•';
+  margin-right: 5px;
+}
+
+.pet-detail-section {
+  margin: 0 14px 14px;
+  border: 1px solid #e7dbd5;
+  border-radius: 11px;
+  padding: 14px;
+  background: white;
+}
+
+.pet-documents-section .attachment-section {
+  margin-top: 0;
+}
+
+.pet-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid #eadfd8;
+  padding: 13px 14px;
+  background: #fffaf7;
+}
+
+.pet-care-editor {
+  display: grid;
+  gap: 6px;
+}
+
+.form-grid .pet-important-toggle {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  color: #6d555e;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.form-grid .pet-important-toggle input {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: #b87520;
+}
+
 .booking-list {
   margin-top: 18px;
 }
@@ -3116,6 +3325,40 @@
 
   .client-pet-row {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .pet-detail-identity {
+    grid-template-columns: 84px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    padding: 13px;
+  }
+
+  .pet-detail-photo {
+    width: 84px;
+    height: 84px;
+  }
+
+  .pet-detail-header-actions {
+    grid-column: 1 / -1;
+  }
+
+  .pet-care-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 11px;
+  }
+
+  .pet-care-empty-summary {
+    grid-column: auto;
+  }
+
+  .pet-detail-section {
+    margin: 0 11px 11px;
+    padding: 11px;
+  }
+
+  .pet-detail-actions > button {
+    min-height: 42px;
   }
 
   .client-booking-heading {

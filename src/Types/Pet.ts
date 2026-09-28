@@ -1,3 +1,11 @@
+export type PetImportantCare = {
+  feeding?: boolean
+  medication?: boolean
+  behavior?: boolean
+  careNotes?: boolean
+  specialInstructions?: boolean
+}
+
 export type Pet = {
   id: string
   clientId: string
@@ -10,5 +18,6 @@ export type Pet = {
   behaviorInfo?: string
   careNotes?: string
   specialInstructions?: string
+  importantCare?: PetImportantCare
   archived: boolean
 }
