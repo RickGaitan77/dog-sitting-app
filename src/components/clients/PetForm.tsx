@@ -2,6 +2,12 @@ import { useState, type FormEvent } from 'react'
 import type { Pet, PetImportantCare } from '../../Types'
 import type { NewEntity } from '../../services'
 
+const SUPPORTED_PROFILE_PHOTO_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const
+
 type PetFormProps = {
   clientId: string
   pet?: Pet
@@ -27,8 +33,41 @@ function optionalValue(value: string): string | undefined {
   return normalizedValue === '' ? undefined : normalizedValue
 }
 
+function readPhotoAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') resolve(reader.result)
+      else reject(new Error('The selected photo could not be read.'))
+    }
+    reader.onerror = () => reject(reader.error ?? new Error('The selected photo could not be read.'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function ProfilePhotoPreview({ name, photoUrl }: { name: string; photoUrl: string }) {
+  const [hasError, setHasError] = useState(false)
+  if (photoUrl === '') return null
+
+  if (hasError) {
+    return <p className="pet-profile-photo-error">The current profile photo could not be displayed.</p>
+  }
+
+  return (
+    <img
+      className="pet-profile-photo-preview"
+      src={photoUrl}
+      alt={`${name.trim() || 'Pet'} profile preview`}
+      onError={() => setHasError(true)}
+    />
+  )
+}
+
 function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) {
   const [nameError, setNameError] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [photoInputKey, setPhotoInputKey] = useState(0)
+  const [isReadingPhoto, setIsReadingPhoto] = useState(false)
   const [importantCare, setImportantCare] = useState<Required<PetImportantCare>>({
     feeding: pet?.importantCare?.feeding ?? false,
     medication: pet?.importantCare?.medication ?? false,
@@ -54,6 +93,35 @@ function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) 
 
   const updateImportantCare = (field: keyof PetImportantCare, value: boolean) => {
     setImportantCare((currentValues) => ({ ...currentValues, [field]: value }))
+  }
+
+  const selectProfilePhoto = async (file: File | undefined) => {
+    if (file === undefined) return
+
+    if (!SUPPORTED_PROFILE_PHOTO_TYPES.includes(
+      file.type as (typeof SUPPORTED_PROFILE_PHOTO_TYPES)[number],
+    )) {
+      setPhotoError('Choose a JPEG, PNG, or WebP image. PDFs and other file types are not supported.')
+      setPhotoInputKey((currentKey) => currentKey + 1)
+      return
+    }
+
+    setIsReadingPhoto(true)
+    setPhotoError(null)
+    try {
+      updateValue('photoUrl', await readPhotoAsDataUrl(file))
+    } catch (readError: unknown) {
+      console.error('Failed to read Pet profile photo', readError)
+      setPhotoError('The selected photo could not be read. Please choose another image.')
+    } finally {
+      setIsReadingPhoto(false)
+    }
+  }
+
+  const removeProfilePhoto = () => {
+    updateValue('photoUrl', '')
+    setPhotoError(null)
+    setPhotoInputKey((currentKey) => currentKey + 1)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -114,10 +182,35 @@ function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) 
           Breed
           <input value={values.breed} onChange={(event) => updateValue('breed', event.target.value)} />
         </label>
-        <label>
-          Photo reference
-          <input value={values.photoUrl} onChange={(event) => updateValue('photoUrl', event.target.value)} placeholder="URL or local reference" />
-        </label>
+        <section className="full-width-field pet-profile-photo-editor" aria-labelledby="pet-profile-photo-heading">
+          <div>
+            <h4 id="pet-profile-photo-heading">Profile Photo</h4>
+            <p>JPEG, PNG, or WebP. The photo stays with this Pet on this device.</p>
+          </div>
+          {values.photoUrl !== '' && (
+            <ProfilePhotoPreview
+              key={values.photoUrl}
+              name={values.name}
+              photoUrl={values.photoUrl}
+            />
+          )}
+          <div className="pet-profile-photo-actions">
+            <label className={`secondary-button pet-profile-photo-button${isReadingPhoto ? ' disabled' : ''}`}>
+              {isReadingPhoto ? 'Reading photo…' : values.photoUrl === '' ? 'Choose Photo' : 'Change Photo'}
+              <input
+                key={photoInputKey}
+                type="file"
+                accept={SUPPORTED_PROFILE_PHOTO_TYPES.join(',')}
+                disabled={isReadingPhoto || isSaving}
+                onChange={(event) => void selectProfilePhoto(event.target.files?.[0])}
+              />
+            </label>
+            {values.photoUrl !== '' && (
+              <button className="text-button danger-text" type="button" onClick={removeProfilePhoto} disabled={isReadingPhoto || isSaving}>Remove Photo</button>
+            )}
+          </div>
+          {photoError !== null && <p className="field-error" role="alert">{photoError}</p>}
+        </section>
         <div className="full-width-field pet-care-editor">
           <label htmlFor="pet-feeding-instructions">Feeding instructions</label>
           <textarea id="pet-feeding-instructions" rows={3} value={values.feedingInstructions} onChange={(event) => updateValue('feedingInstructions', event.target.value)} />
@@ -162,7 +255,7 @@ function PetForm({ clientId, pet, isSaving, onCancel, onSubmit }: PetFormProps) 
 
       <div className="form-actions">
         <button className="secondary-button" type="button" onClick={onCancel} disabled={isSaving}>Cancel</button>
-        <button className="primary-button" type="submit" disabled={isSaving}>{isSaving ? 'Saving…' : 'Save pet'}</button>
+        <button className="primary-button" type="submit" disabled={isSaving || isReadingPhoto}>{isSaving ? 'Saving…' : 'Save pet'}</button>
       </div>
     </form>
   )

@@ -1593,6 +1593,98 @@
   gap: 6px;
 }
 
+.pet-profile-photo-editor {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border: 1px solid #e3d6d0;
+  border-radius: 11px;
+  padding: 13px;
+  background: #fcf8f5;
+}
+
+.pet-profile-photo-editor > div:first-child {
+  min-width: min(100%, 210px);
+  flex: 1;
+}
+
+.pet-profile-photo-editor h4,
+.pet-profile-photo-editor p {
+  margin: 0;
+}
+
+.pet-profile-photo-editor h4 {
+  color: #514549;
+  font-size: 0.92rem;
+}
+
+.pet-profile-photo-editor > div:first-child p {
+  margin-top: 4px;
+  color: #817478;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+.pet-profile-photo-preview {
+  box-sizing: border-box;
+  width: 88px;
+  height: 88px;
+  display: block;
+  flex: 0 0 auto;
+  border: 1px solid #dfd0c9;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #f1e7e2;
+}
+
+.pet-profile-photo-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.form-grid .pet-profile-photo-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  box-sizing: border-box;
+  color: #4d3e42;
+  font-size: 0.88rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.form-grid .pet-profile-photo-button.disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.form-grid .pet-profile-photo-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.pet-profile-photo-error {
+  flex: 1 1 100%;
+  color: #8b292f;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.pet-profile-photo-editor > .field-error {
+  flex: 1 1 100%;
+}
+
 .form-grid .pet-important-toggle {
   width: fit-content;
   display: flex;
@@ -3358,6 +3450,19 @@
   }
 
   .pet-detail-actions > button {
+    min-height: 42px;
+  }
+
+  .pet-profile-photo-editor {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pet-profile-photo-actions {
+    width: 100%;
+  }
+
+  .pet-profile-photo-actions > * {
     min-height: 42px;
   }
 
