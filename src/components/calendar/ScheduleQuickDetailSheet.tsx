@@ -17,8 +17,8 @@ type ScheduleQuickDetailSheetProps = {
   pets: Pet[]
   services: Service[]
   onClose: () => void
-  onEdit: () => void
-  onViewDetails: () => void
+  onEdit?: () => void
+  onViewDetails?: () => void
 }
 
 function ScheduleQuickDetailSheet({
@@ -55,10 +55,12 @@ function ScheduleQuickDetailSheet({
           <div><dt>Services</dt><dd>{serviceNames}</dd></div>
           <div><dt>Status</dt><dd>{booking.status}</dd></div>
         </dl>
-        <div className="calendar-sheet-actions">
-          <button className="primary-button" type="button" onClick={onViewDetails}>View Details</button>
-          <button className="secondary-button" type="button" onClick={onEdit}>Edit</button>
-        </div>
+        {(onViewDetails !== undefined || onEdit !== undefined) && (
+          <div className="calendar-sheet-actions">
+            {onViewDetails !== undefined && <button className="primary-button" type="button" onClick={onViewDetails}>View Details</button>}
+            {onEdit !== undefined && <button className="secondary-button" type="button" onClick={onEdit}>Edit</button>}
+          </div>
+        )}
       </CalendarBottomSheet>
     )
   }
@@ -71,10 +73,12 @@ function ScheduleQuickDetailSheet({
           <div><dt>Area</dt><dd>{area?.name ?? 'No area'}</dd></div>
           <div><dt>Notes</dt><dd>{event.notes || 'Not provided'}</dd></div>
         </dl>
-        <div className="calendar-sheet-actions">
-          <button className="primary-button" type="button" onClick={onViewDetails}>View Details</button>
-          <button className="secondary-button" type="button" onClick={onEdit}>Edit</button>
-        </div>
+        {(onViewDetails !== undefined || onEdit !== undefined) && (
+          <div className="calendar-sheet-actions">
+            {onViewDetails !== undefined && <button className="primary-button" type="button" onClick={onViewDetails}>View Details</button>}
+            {onEdit !== undefined && <button className="secondary-button" type="button" onClick={onEdit}>Edit</button>}
+          </div>
+        )}
       </CalendarBottomSheet>
     )
   }

@@ -9,6 +9,8 @@ import type {
 } from '../../Types'
 
 type AttachmentSectionProps = {
+  emptyTitle?: string
+  heading?: string
   ownerId: string
   ownerName: string
   ownerType: AttachmentOwnerType
@@ -125,6 +127,8 @@ function AttachmentCard({
 }
 
 function AttachmentSection({
+  emptyTitle,
+  heading = 'Attachments',
   ownerId,
   ownerName,
   ownerType,
@@ -228,7 +232,7 @@ function AttachmentSection({
       <div className="section-heading attachment-section-heading">
         <div>
           <p className="eyebrow">{ownerType} files</p>
-          <h3>Attachments</h3>
+          <h3>{heading}</h3>
         </div>
         {!isAdding && (
           <button className="secondary-button" type="button" onClick={() => {
@@ -275,8 +279,8 @@ function AttachmentSection({
 
       {!isLoading && attachments.length === 0 && !isAdding && (
         <div className="empty-state compact-empty-state attachment-empty-state">
-          <h3>No {ownerType.toLowerCase()} attachments</h3>
-          <p>Add intake sheets, reference photos, or documents for {ownerName}.</p>
+          <h3>{emptyTitle ?? `No ${ownerType.toLowerCase()} attachments`}</h3>
+          <p>Add a supported file for {ownerName}.</p>
         </div>
       )}
 
