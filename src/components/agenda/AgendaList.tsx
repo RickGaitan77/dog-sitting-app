@@ -18,6 +18,8 @@ import {
   getMonthKey,
   normalizeAgendaSearch,
 } from './agendaDates'
+import UrgencyIndicator from '../urgency/UrgencyIndicator'
+import { getTentativeBookingUrgency, urgencyClassName } from '../../utils/urgency'
 
 type BookingAgendaItem = {
   kind: 'booking'
@@ -199,6 +201,10 @@ function AgendaList({
   }, [items])
 
   const firstFutureItem = items.find((item) => item.startDate >= today)
+  const animatedTentativeBookingId = items
+    .filter((item): item is BookingAgendaItem => item.kind === 'booking')
+    .find((item) => getTentativeBookingUrgency(item.booking, today).level === 2)
+    ?.booking.id
   const todayMonth = getMonthKey(today)
   const dividerBeforeMonth = firstFutureItem !== undefined &&
     getMonthKey(firstFutureItem.startDate) > todayMonth
@@ -268,6 +274,7 @@ function AgendaList({
                     <AgendaCard
                       item={item}
                       isPast={item.endDate < today}
+                      animateTentative={item.kind === 'booking' && item.booking.id === animatedTentativeBookingId}
                       onOpenBooking={onOpenBooking}
                       onOpenEvent={onOpenEvent}
                     />
@@ -294,11 +301,13 @@ function AgendaList({
 function AgendaCard({
   item,
   isPast,
+  animateTentative,
   onOpenBooking,
   onOpenEvent,
 }: {
   item: AgendaItem
   isPast: boolean
+  animateTentative: boolean
   onOpenBooking: (bookingId: string) => void
   onOpenEvent: (eventId: string) => void
 }) {
@@ -329,8 +338,13 @@ function AgendaCard({
     )
   }
 
+  const tentativeUrgency = getTentativeBookingUrgency(item.booking, getTodayDateString())
+  const tentativeClass = tentativeUrgency.level > 0
+    ? urgencyClassName({ ...tentativeUrgency, animate: tentativeUrgency.animate && animateTentative })
+    : ''
+
   return (
-    <article className={`agenda-card${isPast ? ' past' : ''}`} style={style}>
+    <article className={`agenda-card${isPast ? ' past' : ''}${tentativeClass ? ` ${tentativeClass}` : ''}`} style={style}>
       <button
         className="agenda-card-main"
         type="button"
@@ -352,6 +366,14 @@ function AgendaCard({
           <span>{item.petNames.join(' • ')}</span>
           <span>{item.serviceNames.join(' • ')}</span>
         </span>
+        {tentativeUrgency.level > 0 && (
+          <UrgencyIndicator
+            level={tentativeUrgency.level}
+            animate={tentativeUrgency.animate && animateTentative}
+            compact
+            label={tentativeUrgency.label}
+          />
+        )}
       </button>
     </article>
   )

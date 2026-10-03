@@ -23,6 +23,7 @@ import CalendarBottomSheet from './CalendarBottomSheet'
 import ScheduleQuickDetailSheet from './ScheduleQuickDetailSheet'
 import {
   buildMonthGrid,
+  getTodayDateString,
   getMonthDateRange,
   getMonthLabel,
   type CalendarMonth,
@@ -34,6 +35,7 @@ import {
   type CalendarLaidOutItem,
 } from './calendarLayout'
 import { buildMealCalendarItems } from './mealCalendarItems'
+import { getTentativeBookingUrgency, urgencyClassName } from '../../utils/urgency'
 
 type MonthCalendarProps = {
   month: CalendarMonth
@@ -110,6 +112,7 @@ function MonthCalendar({
   const touchStart = useRef<{ x: number; y: number } | null>(null)
   const didSwipe = useRef(false)
   const days = useMemo(() => buildMonthGrid(month), [month])
+  const today = getTodayDateString()
   const visibleStart = days[0].date
   const visibleEnd = days[days.length - 1].date
   const monthRange = getMonthDateRange(month)
@@ -128,6 +131,12 @@ function MonthCalendar({
   const bookingById = useMemo(
     () => new Map(bookings.map((booking) => [booking.id, booking])),
     [bookings],
+  )
+  const animatedTentativeBookingId = useMemo(
+    () => [...bookings]
+      .filter((booking) => getTentativeBookingUrgency(booking, today).level === 2)
+      .sort((left, right) => left.startDate.localeCompare(right.startDate))[0]?.id,
+    [bookings, today],
   )
   const eventById = useMemo(
     () => new Map(events.map((event) => [event.id, event])),
@@ -252,18 +261,37 @@ function MonthCalendar({
       '--calendar-item-text-color': getReadableTextColor(color),
       '--calendar-lane': item.lane + 1,
     } as CSSProperties
+    const tentativeUrgency = booking === undefined
+      ? { level: 0 as const, animate: false, label: 'Normal' }
+      : getTentativeBookingUrgency(booking, today)
+    const shouldAnimateTentative = tentativeUrgency.animate &&
+      booking?.id === animatedTentativeBookingId
 
     return (
       <button
-        className={`calendar-work-bar calendar-work-${item.kind} segment-${segmentPosition}`}
+        className={[
+          'calendar-work-bar',
+          `calendar-work-${item.kind}`,
+          `segment-${segmentPosition}`,
+          tentativeUrgency.level > 0
+            ? urgencyClassName({ ...tentativeUrgency, animate: shouldAnimateTentative })
+            : '',
+        ].filter(Boolean).join(' ')}
         type="button"
         style={style}
         title={`${label}${qualifier ? `: ${qualifier}` : ''}`}
-        aria-label={`${label} ${item.kind} on ${date}`}
+        aria-label={`${label} ${item.kind} on ${date}${tentativeUrgency.level > 0 ? ', Tentative' : ''}`}
         data-calendar-item-id={item.id}
         onClick={() => openWorkItem(item)}
         key={item.key}
       >
+        {tentativeUrgency.level > 0 && (
+          <span
+            className={`calendar-tentative-cue${shouldAnimateTentative ? ' urgency-animated' : ''}`}
+            title={tentativeUrgency.label}
+            aria-hidden="true"
+          >T</span>
+        )}
         {showLabel && <strong>{label}</strong>}
         {showLabel && qualifier && <span>{qualifier}</span>}
       </button>

@@ -10,6 +10,9 @@ import {
 import type { AppSettings } from '../Types'
 import AreasManager from '../components/areas/AreasManager'
 import ServicesManager from '../components/services/ServicesManager'
+import UrgencyIndicator from '../components/urgency/UrgencyIndicator'
+import { announceReduceMotionChange } from '../utils/motionPreference'
+import { getBackupUrgency, urgencyClassName } from '../utils/urgency'
 
 type ReminderSettingKey =
   | 'weeklyOverviewEnabled'
@@ -18,7 +21,7 @@ type ReminderSettingKey =
   | 'medicationReminderEnabled'
   | 'mealPlanningReminderEnabled'
 
-type ToggleSettingKey = ReminderSettingKey | 'showMealOverlay'
+type ToggleSettingKey = ReminderSettingKey | 'showMealOverlay' | 'reduceMotion'
 
 const REMINDER_CONTROLS: ReadonlyArray<{
   key: ReminderSettingKey
@@ -121,6 +124,7 @@ function SettingsScreen() {
         [key]: enabled,
       })
       setSettings(updatedSettings)
+      if (key === 'reduceMotion') announceReduceMotionChange(enabled)
     } catch (saveError: unknown) {
       console.error('Failed to update settings', saveError)
       setError('The setting could not be saved. Please try again.')
@@ -242,6 +246,8 @@ function SettingsScreen() {
     return <ServicesManager onBack={() => setView('settings')} />
   }
 
+  const backupUrgency = getBackupUrgency(settings?.lastBackupAt)
+
   return (
     <section className="settings-screen">
       <div className="view-heading settings-heading">
@@ -252,6 +258,32 @@ function SettingsScreen() {
       </div>
 
       {error !== null && <p className="error-message">{error}</p>}
+
+      {settings !== null && (
+        <section className="settings-card" aria-labelledby="appearance-settings-title">
+          <div className="settings-section-heading">
+            <h3 id="appearance-settings-title">Appearance</h3>
+            <p>Choose how visual attention is presented throughout the app.</p>
+          </div>
+
+          <div className="settings-list">
+            <label className="setting-toggle">
+              <span>
+                <strong>Reduce Motion</strong>
+                <small>Keep warning labels and borders visible without pulsing or decorative movement.</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={settings.reduceMotion}
+                disabled={isSaving}
+                onChange={(event) =>
+                  void updateToggleSetting('reduceMotion', event.target.checked)
+                }
+              />
+            </label>
+          </div>
+        </section>
+      )}
 
       {settings !== null && (
         <section className="settings-card" aria-labelledby="scheduling-settings-title">
@@ -363,7 +395,10 @@ function SettingsScreen() {
         )}
       </section>
 
-      <section className="settings-card backup-settings-card" aria-labelledby="backup-settings-title">
+      <section
+        className={`settings-card backup-settings-card ${urgencyClassName(backupUrgency)}`}
+        aria-labelledby="backup-settings-title"
+      >
         <div className="settings-section-heading">
           <h3 id="backup-settings-title">Data &amp; Backup</h3>
           <p>
@@ -413,6 +448,14 @@ function SettingsScreen() {
             ? 'No backup recorded'
             : formatBackupDate(settings.lastBackupAt)}
         </p>
+        {backupUrgency.level > 0 && (
+          <UrgencyIndicator
+            level={backupUrgency.level}
+            animate={backupUrgency.animate}
+            icon={backupUrgency.level >= 3 ? '!' : '•'}
+            label={backupUrgency.label}
+          />
+        )}
         {pendingRestore !== null && (
           <p className="selected-backup-name">
             Selected file: <strong>{pendingRestore.fileName}</strong>

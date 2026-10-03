@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { Client, Pet, PetImportantCare } from '../../Types'
 import AttachmentSection from '../attachments/AttachmentSection'
+import UrgencyIndicator from '../urgency/UrgencyIndicator'
+import { urgencyClassName } from '../../utils/urgency'
 
 type PetDetailProps = {
   client: Client
@@ -33,19 +35,38 @@ function PetDetailPhoto({ pet }: { pet: Pet }) {
   )
 }
 
-function CareSectionCard({ section, pet }: { section: CareSection; pet: Pet }) {
+function CareSectionCard({
+  animateImportant,
+  section,
+  pet,
+}: {
+  animateImportant: boolean
+  section: CareSection
+  pet: Pet
+}) {
   const isImportant = pet.importantCare?.[section.importantKey] === true
   const className = [
     'pet-care-section',
     section.medication ? 'pet-medication-section' : '',
     isImportant ? 'pet-care-important' : '',
+    isImportant
+      ? urgencyClassName({ level: 2, animate: animateImportant })
+      : '',
   ].filter(Boolean).join(' ')
 
   return (
     <section className={className} aria-label={`${section.label}${isImportant ? ', Important' : ''}`}>
       <div className="pet-care-heading">
         <h4>{section.medication && <span aria-hidden="true">✚ </span>}{section.label}</h4>
-        {isImportant && <span className="pet-important-badge"><span aria-hidden="true">★</span> Important</span>}
+        {isImportant && (
+          <UrgencyIndicator
+            level={2}
+            animate={animateImportant}
+            compact
+            icon="★"
+            label="Important"
+          />
+        )}
       </div>
       <p className={section.value ? undefined : 'pet-care-empty'}>{section.value || section.emptyText}</p>
     </section>
@@ -66,6 +87,9 @@ function PetDetail({ client, isSaving, pet, onArchive, onClose, onEdit }: PetDet
   const emptySections = careSections.filter(
     (section) => section.value === undefined && pet.importantCare?.[section.importantKey] !== true,
   )
+  const firstImportantKey = visibleSections.find(
+    (section) => pet.importantCare?.[section.importantKey] === true,
+  )?.importantKey
 
   return (
     <article className="pet-detail-card client-selected-pet">
@@ -85,7 +109,12 @@ function PetDetail({ client, isSaving, pet, onArchive, onClose, onEdit }: PetDet
 
       <div className="pet-care-grid">
         {visibleSections.map((section) => (
-          <CareSectionCard key={section.importantKey} section={section} pet={pet} />
+          <CareSectionCard
+            key={section.importantKey}
+            section={section}
+            pet={pet}
+            animateImportant={section.importantKey === firstImportantKey}
+          />
         ))}
         {emptySections.length > 0 && (
           <section className="pet-care-section pet-care-empty-summary" aria-label="Other care information">

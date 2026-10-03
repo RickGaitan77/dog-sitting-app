@@ -15,6 +15,7 @@ import {
   getMealPrepState,
   type MealPrepState,
 } from './mealWeekDates'
+import { getMealPrepUrgency, urgencyClassName } from '../../utils/urgency'
 
 type WeeklyMealPlannerProps = {
   areas: Area[]
@@ -82,6 +83,9 @@ function WeeklyMealPlanner({
   const overduePrep = weekMeals.filter(
     (meal) => getMealPrepState(meal, today) === 'overdue',
   ).length
+  const animatedOverdueMealId = weekMeals.find(
+    (meal) => getMealPrepUrgency(meal, today).level === 3,
+  )?.id
 
   return (
     <div className={`weekly-meal-planner${planningMode ? ' planning-mode' : ''}`}>
@@ -135,6 +139,9 @@ function WeeklyMealPlanner({
                 'meal-day-card',
                 day.date === today ? 'today' : '',
                 planningMode && dayMeals.length === 0 ? 'unplanned-highlight' : '',
+                planningMode && dayMeals.length === 0
+                  ? urgencyClassName({ level: 1, animate: false })
+                  : '',
               ].filter(Boolean).join(' ')}
               key={day.date}
             >
@@ -187,9 +194,10 @@ function WeeklyMealPlanner({
                 )}
                 {dayMeals.map((meal) => {
                   const prepState = getMealPrepState(meal, today)
+                  const prepUrgency = getMealPrepUrgency(meal, today)
                   return (
                     <button
-                      className="weekly-meal-entry"
+                      className={`weekly-meal-entry${prepUrgency.level > 0 ? ` ${urgencyClassName({ ...prepUrgency, animate: meal.id === animatedOverdueMealId })}` : ''}`}
                       type="button"
                       onClick={() => onOpenMeal(meal.id)}
                       key={meal.id}

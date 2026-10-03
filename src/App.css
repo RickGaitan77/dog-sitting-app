@@ -6,6 +6,127 @@
   color: #2f2a2a;
 }
 
+/* Shared urgency hierarchy: meaning is always carried by a label, icon, border,
+   or shape. Motion is an optional reinforcement and never the sole cue. */
+.urgency-level-0 {
+  --urgency-color: transparent;
+  --urgency-soft: transparent;
+  --urgency-text: inherit;
+}
+
+.urgency-level-1 {
+  --urgency-color: #c17a24;
+  --urgency-soft: #fff1d4;
+  --urgency-text: #74440e;
+}
+
+.urgency-level-2 {
+  --urgency-color: #ad671a;
+  --urgency-soft: #ffe6b5;
+  --urgency-text: #683a08;
+}
+
+.urgency-level-3 {
+  --urgency-color: #a63f59;
+  --urgency-soft: #f9dce3;
+  --urgency-text: #7b2940;
+}
+
+.urgency-level-4 {
+  --urgency-color: #84243d;
+  --urgency-soft: #f5c9d3;
+  --urgency-text: #65182e;
+}
+
+.urgency-indicator {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--urgency-color);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: var(--urgency-soft);
+  color: var(--urgency-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.urgency-indicator.compact {
+  gap: 4px;
+  padding: 3px 7px;
+  font-size: 0.68rem;
+}
+
+.urgency-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--urgency-color);
+  color: white;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.urgency-level-4.urgency-indicator {
+  border-width: 2px;
+}
+
+@keyframes urgency-breathe {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--urgency-color) 12%, transparent);
+    opacity: 0.86;
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--urgency-color) 20%, transparent);
+    opacity: 1;
+  }
+}
+
+@keyframes urgency-surface-breathe {
+  0%, 100% {
+    box-shadow: inset 4px 0 var(--urgency-color), 0 0 0 0 rgba(166, 63, 89, 0.08);
+  }
+  50% {
+    box-shadow: inset 4px 0 var(--urgency-color), 0 0 0 5px rgba(166, 63, 89, 0.18);
+  }
+}
+
+.urgency-indicator.urgency-animated .urgency-icon,
+.calendar-tentative-cue.urgency-animated {
+  animation: urgency-breathe 2.2s ease-in-out infinite;
+}
+
+.weekly-meal-entry.urgency-animated {
+  animation: urgency-surface-breathe 2.2s ease-in-out infinite;
+}
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -586,6 +707,22 @@
   font-size: 0.82rem;
 }
 
+.backup-settings-card.urgency-level-1,
+.backup-settings-card.urgency-level-2 {
+  border-color: var(--urgency-color);
+  box-shadow: inset 4px 0 var(--urgency-color), 0 4px 14px rgba(65, 45, 50, 0.06);
+}
+
+.backup-settings-card.urgency-level-3,
+.backup-settings-card.urgency-level-4 {
+  border: 2px solid var(--urgency-color);
+  box-shadow: inset 4px 0 var(--urgency-color), 0 4px 14px rgba(65, 45, 50, 0.08);
+}
+
+.backup-settings-card > .urgency-indicator {
+  margin-top: 10px;
+}
+
 .backup-success {
   border-radius: 8px;
   padding: 9px 11px;
@@ -1027,6 +1164,12 @@
 
 .client-booking-card.cancelled {
   opacity: 0.72;
+}
+
+.client-booking-card.urgency-level-1,
+.client-booking-card.urgency-level-2 {
+  outline: 2px solid var(--urgency-color);
+  outline-offset: -2px;
 }
 
 .client-booking-card > button {
@@ -2105,6 +2248,10 @@
   background: #fff9ed;
 }
 
+.pet-care-important.urgency-level-2 {
+  box-shadow: inset 0 0 0 1px var(--urgency-color);
+}
+
 .pet-medication-section.pet-care-important {
   border-color: #c47b28;
   border-left-width: 6px;
@@ -2467,6 +2614,12 @@
   opacity: 0.72;
 }
 
+.agenda-card.urgency-level-1,
+.agenda-card.urgency-level-2 {
+  outline: 2px solid var(--urgency-color);
+  outline-offset: -2px;
+}
+
 .agenda-event-card {
   border-left-style: dashed;
   background: #fdf9f2;
@@ -2532,6 +2685,10 @@
 
 .agenda-card-meta span {
   overflow-wrap: anywhere;
+}
+
+.agenda-card-main > .urgency-indicator {
+  margin-top: 2px;
 }
 
 .agenda-area {
@@ -2626,6 +2783,13 @@
   border-radius: 13px;
   background: #fffaf7;
   box-shadow: 0 3px 12px rgba(65, 45, 50, 0.06);
+}
+
+.meal-card.urgency-level-3,
+.meal-details.urgency-level-3,
+.weekly-meal-entry.urgency-level-3 {
+  border-color: var(--urgency-color);
+  box-shadow: inset 4px 0 var(--urgency-color), 0 3px 12px rgba(111, 37, 57, 0.12);
 }
 
 .meal-card-main {
@@ -2821,6 +2985,10 @@
   border: 2px solid #c97e2f;
   background: #fff7e8;
   box-shadow: 0 7px 20px rgba(151, 91, 31, 0.16);
+}
+
+.meal-day-card.unplanned-highlight.urgency-level-1 {
+  border-color: var(--urgency-color);
 }
 
 .planning-mode .meal-day-card.today:not(.unplanned-highlight) {
@@ -3453,6 +3621,28 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.calendar-work-bar.urgency-level-1,
+.calendar-work-bar.urgency-level-2 {
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 211, 0.92);
+}
+
+.calendar-tentative-cue {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto !important;
+  display: inline-grid;
+  place-items: center;
+  overflow: visible !important;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: rgba(255, 249, 232, 0.96);
+  color: #75420d;
+  font-size: 0.48rem !important;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 1 !important;
 }
 
 .calendar-work-bar.segment-single {

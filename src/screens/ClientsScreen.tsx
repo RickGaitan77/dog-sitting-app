@@ -13,6 +13,8 @@ import PetDetail from '../components/clients/PetDetail'
 import PetForm from '../components/clients/PetForm'
 import { appServices, type NewEntity } from '../services'
 import type { Area, Booking, Client, Pet, Service } from '../Types'
+import UrgencyIndicator from '../components/urgency/UrgencyIndicator'
+import { getTentativeBookingUrgency, urgencyClassName } from '../utils/urgency'
 
 type ClientFormMode = 'create' | 'edit' | null
 
@@ -35,12 +37,16 @@ function BookingSummaryCard({
   booking,
   pets,
   services,
+  today,
+  animateTentative,
   onOpen,
 }: {
   areas: Map<string, Area>
   booking: Booking
   pets: Map<string, Pet>
   services: Map<string, Service>
+  today: string
+  animateTentative?: boolean
   onOpen: (bookingId: string) => void
 }) {
   const area = areas.get(booking.areaId)
@@ -53,9 +59,16 @@ function BookingSummaryCard({
   const style = {
     '--client-area-color': area?.color ?? '#a89b96',
   } as CSSProperties
+  const tentativeUrgency = getTentativeBookingUrgency(booking, today)
+  const tentativeClass = tentativeUrgency.level > 0
+    ? urgencyClassName({
+        ...tentativeUrgency,
+        animate: tentativeUrgency.animate && animateTentative === true,
+      })
+    : ''
 
   return (
-    <article className={`client-booking-card${booking.status === 'Cancelled' ? ' cancelled' : ''}`} style={style}>
+    <article className={`client-booking-card${booking.status === 'Cancelled' ? ' cancelled' : ''}${tentativeClass ? ` ${tentativeClass}` : ''}`} style={style}>
       <button type="button" onClick={() => onOpen(booking.id)}>
         <span className="client-booking-heading">
           <strong>{formatBookingDateRange(booking.startDate, booking.endDate)}</strong>
@@ -64,6 +77,14 @@ function BookingSummaryCard({
         <span className="client-booking-area"><i aria-hidden="true" />{area?.name ?? 'Unknown area'}</span>
         {serviceNames !== '' && <span>{serviceNames}</span>}
         {petNames !== '' && <span className="client-booking-pets">{petNames}</span>}
+        {tentativeUrgency.level > 0 && (
+          <UrgencyIndicator
+            level={tentativeUrgency.level}
+            animate={tentativeUrgency.animate && animateTentative === true}
+            compact
+            label={tentativeUrgency.label}
+          />
+        )}
       </button>
     </article>
   )
@@ -276,6 +297,9 @@ function ClientsScreen() {
       selectedClient.id,
       today,
     )
+    const animatedTentativeBookingId = upcoming.find(
+      (booking) => getTentativeBookingUrgency(booking, today).level === 2,
+    )?.id
     const contactFields = [
       ['Phone', selectedClient.phone],
       ['Email', selectedClient.email],
@@ -364,7 +388,7 @@ function ClientsScreen() {
           <h3 id="client-upcoming-heading">Upcoming Bookings</h3>
           {upcoming.length === 0 ? <p className="client-section-empty">No upcoming bookings.</p> : (
             <div className="client-booking-list">
-              {upcoming.map((booking) => <BookingSummaryCard key={booking.id} booking={booking} areas={areaById} pets={petById} services={serviceById} onOpen={setSelectedBookingId} />)}
+              {upcoming.map((booking) => <BookingSummaryCard key={booking.id} booking={booking} areas={areaById} pets={petById} services={serviceById} today={today} animateTentative={booking.id === animatedTentativeBookingId} onOpen={setSelectedBookingId} />)}
             </div>
           )}
         </section>
@@ -382,7 +406,7 @@ function ClientsScreen() {
           <h3 id="client-history-heading">Booking History</h3>
           {history.length === 0 ? <p className="client-section-empty">No previous bookings.</p> : (
             <div className="client-booking-list">
-              {history.map((booking) => <BookingSummaryCard key={booking.id} booking={booking} areas={areaById} pets={petById} services={serviceById} onOpen={setSelectedBookingId} />)}
+              {history.map((booking) => <BookingSummaryCard key={booking.id} booking={booking} areas={areaById} pets={petById} services={serviceById} today={today} onOpen={setSelectedBookingId} />)}
             </div>
           )}
         </section>

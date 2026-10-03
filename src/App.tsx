@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import AppHeader from './components/AppHeader'
 import BottomNav from './components/BottomNav'
@@ -7,8 +7,11 @@ import ReminderCenter from './components/reminders/ReminderCenter'
 import { screenRegistry } from './config/screenRegistry'
 import type { AppScreen } from './Types/AppScreen'
 import type { ScheduleFilters } from './Types/ScheduleFilters'
+import { appServices } from './services'
+import { REDUCE_MOTION_CHANGE_EVENT } from './utils/motionPreference'
 
 function App() {
+  const [reduceMotion, setReduceMotion] = useState(false)
   const [activeTab, setActiveTab] = useState<AppScreen>('Calendar')
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [bookingCreationRequested, setBookingCreationRequested] =
@@ -24,6 +27,28 @@ function App() {
     meals: true,
   })
 
+  useEffect(() => {
+    let isCurrent = true
+    void appServices.settings
+      .get()
+      .then((settings) => {
+        if (isCurrent) setReduceMotion(settings.reduceMotion)
+      })
+      .catch((settingsError: unknown) => {
+        console.error('Failed to load motion preference', settingsError)
+      })
+
+    const handleReduceMotionChange = (event: Event) => {
+      setReduceMotion((event as CustomEvent<boolean>).detail)
+    }
+    window.addEventListener(REDUCE_MOTION_CHANGE_EVENT, handleReduceMotionChange)
+
+    return () => {
+      isCurrent = false
+      window.removeEventListener(REDUCE_MOTION_CHANGE_EVENT, handleReduceMotionChange)
+    }
+  }, [])
+
   const changeTab = (tab: AppScreen) => {
     setActiveTab(tab)
     setShowAddMenu(false)
@@ -31,7 +56,7 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell${reduceMotion ? ' reduce-motion' : ''}`}>
       <AppHeader
         isSettingsOpen={activeTab === 'Settings'}
         onOpenSettings={() => changeTab('Settings')}

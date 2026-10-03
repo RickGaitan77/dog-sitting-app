@@ -1,5 +1,8 @@
 import type { Meal } from '../../Types'
 import { formatMealDate } from './mealDates'
+import { getTodayDateString } from '../calendar/calendarDates'
+import UrgencyIndicator from '../urgency/UrgencyIndicator'
+import { getMealPrepUrgency, urgencyClassName } from '../../utils/urgency'
 
 type MealDetailProps = {
   error: string | null
@@ -20,6 +23,7 @@ function MealDetail({
   onEdit,
   onTogglePrep,
 }: MealDetailProps) {
+  const prepUrgency = getMealPrepUrgency(meal, getTodayDateString())
   return (
     <section className="meal-screen">
       <div className="view-heading">
@@ -36,7 +40,7 @@ function MealDetail({
 
       {error !== null && <p className="error-message">{error}</p>}
 
-      <div className="detail-card meal-details">
+      <div className={`detail-card meal-details${prepUrgency.level > 0 ? ` ${urgencyClassName(prepUrgency)}` : ''}`}>
         <div><span>Meal date</span><p>{formatMealDate(meal.date)}</p></div>
         <div><span>Meal type</span><p>{meal.mealType || 'Not provided'}</p></div>
         <div><span>Prep date</span><p>{meal.prepDate ? formatMealDate(meal.prepDate) : 'Not provided'}</p></div>
@@ -48,6 +52,14 @@ function MealDetail({
         <div className="detail-wide"><span>Prep notes</span><p>{meal.prepNotes || 'Not provided'}</p></div>
         <div className="detail-wide"><span>Notes</span><p>{meal.notes || 'Not provided'}</p></div>
       </div>
+
+      {prepUrgency.level > 0 && (
+        <UrgencyIndicator
+          level={prepUrgency.level}
+          animate={prepUrgency.animate}
+          label={prepUrgency.label}
+        />
+      )}
 
       <button className="secondary-button prep-toggle-button" type="button" disabled={isSaving} onClick={onTogglePrep}>
         {meal.prepCompleted ? 'Mark prep incomplete' : 'Mark prep complete'}
