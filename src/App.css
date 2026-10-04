@@ -1228,6 +1228,441 @@ textarea:focus-visible,
   }
 }
 
+/* Stage 25 final visual-refinement pass. */
+.app-content {
+  padding-top: 9px;
+}
+
+.app-header-flourish {
+  width: clamp(84px, 25vw, 112px);
+  height: 23px;
+  stroke-width: 1.2;
+  opacity: 0.76;
+}
+
+.app-header-flourish .app-header-horseshoe {
+  stroke-width: 1.45;
+}
+
+.app-header-flourish .app-header-paw {
+  fill: rgba(188, 112, 140, 0.2);
+  stroke-width: 1.05;
+}
+
+.view-heading {
+  min-height: 42px;
+  margin-bottom: 9px;
+  padding-bottom: 8px;
+}
+
+.view-heading::after,
+.agenda-heading::after {
+  content: '';
+  width: 72px;
+  height: 12px;
+  position: absolute;
+  top: auto;
+  bottom: -1px;
+  left: 0;
+  background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 14' fill='none' stroke='%23bc708c' stroke-width='1.25' stroke-linecap='round'%3E%3Cpath d='M1 11c17 0 23-8 37-8 13 0 20 7 32 5'/%3E%3Cpath d='M22 7c-4-4-8-4-11-3M48 5c2-4 5-5 9-5'/%3E%3Ccircle cx='76' cy='6' r='1.2' fill='%23d59aad' stroke='none'/%3E%3C/svg%3E");
+  font-size: 0;
+  opacity: 0.72;
+  transform: none;
+}
+
+.agenda-heading {
+  position: relative;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.agenda-heading > p {
+  margin-bottom: 5px;
+}
+
+.bottom-nav-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bottom-nav button.active .bottom-nav-icon {
+  stroke-width: 2.35;
+  filter: drop-shadow(0 1px 2px rgba(126, 41, 77, 0.16));
+}
+
+.client-search-row {
+  margin-top: 2px;
+  border-color: #dfcbc6;
+  background: rgba(255, 254, 252, 0.94);
+  box-shadow: 0 4px 14px rgba(91, 56, 70, 0.055);
+}
+
+.client-directory-card {
+  border-left-width: 5px;
+  border-color: #e2cbc6;
+  box-shadow: inset 2px 0 var(--client-area-color), 0 6px 17px rgba(83, 50, 62, 0.085);
+}
+
+.client-pet-thumbnail {
+  width: 54px;
+  height: 54px;
+  padding: 2px;
+  border-width: 2px;
+  background: #fffdfb;
+  object-fit: cover;
+}
+
+.client-directory-card .client-card-actions {
+  gap: 2px;
+  border-left-color: #e9d8d3;
+  padding-inline: 8px;
+  background: linear-gradient(180deg, #fff9f8, #f9ecea);
+}
+
+.client-directory-card .client-card-actions .text-button {
+  min-height: 38px;
+  padding-inline: 8px;
+  font-size: 0.76rem;
+}
+
+.client-identity-card,
+.reminder-center {
+  border-color: #dfc8c3;
+  background: linear-gradient(135deg, #fffefc, #fff7f4);
+  box-shadow: 0 7px 20px rgba(83, 50, 62, 0.09);
+}
+
+.client-detail-section {
+  border-color: #e0ccc6;
+  background: #fffefb;
+  box-shadow: 0 5px 16px rgba(83, 50, 62, 0.07);
+}
+
+#client-contact-heading::after {
+  content: '';
+  width: 44px;
+  height: 7px;
+  display: inline-block;
+  margin-left: 9px;
+  border-top: 1px solid #cf8ea4;
+  border-radius: 50%;
+  vertical-align: middle;
+  transform: rotate(-4deg);
+}
+
+.pet-detail-card {
+  border: 1px solid #ddc7c2;
+  background: #fffefa;
+  box-shadow: 0 9px 25px rgba(83, 50, 62, 0.11);
+}
+
+.pet-care-section {
+  border-color: #e0cdc8;
+  border-left-color: #cdb5bc;
+  background: #faf3f0;
+  box-shadow: 0 2px 8px rgba(83, 50, 62, 0.045);
+}
+
+.pet-medication-section {
+  border-color: #e39ab0;
+  border-left-color: #be416c;
+  background: #fff4f7;
+}
+
+.pet-care-important {
+  border-color: #dfaa55;
+  background: #fff8e9;
+}
+
+.pet-documents-section {
+  border-top: 1px solid #e4d1cc;
+  background: #fffaf7;
+}
+
+.meal-view-actions .text-button {
+  border: 1px solid #e4cdd3;
+  background: #f7e8ec;
+}
+
+.meal-view-actions .active {
+  border-color: #9f3f68;
+  background: #9f3f68;
+  color: white;
+  box-shadow: 0 4px 10px rgba(126, 41, 77, 0.2);
+}
+
+.weekly-meal-planner {
+  margin-top: 10px;
+}
+
+.meal-week-summary {
+  border-color: #dbc4bf;
+  background: linear-gradient(135deg, #fffefb, #f8e8e6);
+  box-shadow: 0 6px 18px rgba(83, 50, 62, 0.075);
+}
+
+.meal-week-progress-track {
+  height: 8px;
+  border: 1px solid #ddcfca;
+  background: #f2e6e1;
+}
+
+.meal-week-toolbar {
+  gap: 4px;
+  border: 1px solid #dfcbc6;
+  border-radius: 15px;
+  padding: 5px;
+  background: #fffdfb;
+  box-shadow: 0 4px 13px rgba(83, 50, 62, 0.065);
+}
+
+.meal-week-toolbar .calendar-nav-button {
+  width: 40px;
+  height: 40px;
+  border-color: transparent;
+  background: #f8e8ec;
+  box-shadow: none;
+}
+
+.meal-week-title {
+  gap: 0;
+}
+
+.meal-week-title h3 {
+  color: var(--polish-ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.04rem;
+}
+
+.meal-week-title .text-button {
+  min-height: 30px;
+  color: var(--polish-berry);
+  font-size: 0.72rem;
+}
+
+.settings-heading {
+  min-height: 38px;
+  margin-bottom: 1px;
+}
+
+.settings-screen .settings-group-card {
+  margin-top: 13px;
+}
+
+.settings-screen .settings-group-card .settings-list {
+  border-color: #dfcac5;
+  background: #fffefb;
+  box-shadow: 0 5px 16px rgba(83, 50, 62, 0.075);
+}
+
+.settings-screen .settings-link-row::before,
+.settings-screen .setting-toggle::before {
+  width: 31px;
+  height: 31px;
+  border: 1px solid #e5bdca;
+  background: #f2d4de;
+  color: #873254;
+  font-size: 0.96rem;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.62);
+}
+
+.areas-manager-heading,
+.services-manager-heading,
+.backup-restore-view > .view-heading {
+  min-height: 0;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+.areas-manager-heading .back-button,
+.services-manager-heading .back-button,
+.backup-restore-view > .view-heading .back-button {
+  min-height: 30px;
+  margin-bottom: 0;
+  padding-block: 4px;
+}
+
+.areas-manager-heading .eyebrow,
+.services-manager-heading .eyebrow,
+.backup-restore-view > .view-heading .eyebrow {
+  margin-top: 0;
+  font-size: 0.61rem;
+}
+
+.area-manager-swatch {
+  width: 34px;
+  height: 34px;
+  border-width: 2px;
+}
+
+.area-manager-identity small {
+  color: #876e77;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+}
+
+.area-order-button {
+  width: 38px;
+  height: 38px;
+  border-color: #e4cbd2;
+  border-radius: 999px;
+  background: #f9eaee;
+  color: #873254;
+  font-size: 1rem;
+  font-weight: 850;
+  box-shadow: none;
+}
+
+.service-manager-row {
+  border-color: #e2cfca;
+  background: #fffefb;
+}
+
+.backup-status-card,
+.restore-card {
+  border: 1px solid #ddc7c2;
+  background: #fffefb;
+  box-shadow: 0 7px 21px rgba(83, 50, 62, 0.09);
+}
+
+.backup-status-card {
+  background: linear-gradient(145deg, #fffefb, #fff6f4);
+}
+
+.restore-card {
+  background: linear-gradient(145deg, #fffefb, #faf1ee);
+}
+
+@media (max-width: 600px) {
+  .app-content {
+    padding-top: 7px;
+  }
+
+  .app-header-flourish {
+    width: clamp(80px, 25vw, 94px);
+    height: 21px;
+  }
+
+  .view-heading {
+    min-height: 38px;
+    margin-bottom: 8px;
+  }
+
+  .areas-manager-heading,
+  .services-manager-heading {
+    align-items: flex-end;
+    flex-direction: row;
+  }
+
+  .areas-manager-heading > div,
+  .services-manager-heading > div,
+  .backup-restore-view > .view-heading > div {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 9px;
+  }
+
+  .areas-manager-heading > div,
+  .services-manager-heading > div {
+    flex: 1;
+  }
+
+  .areas-manager-heading h2,
+  .services-manager-heading h2,
+  .backup-restore-view > .view-heading h2 {
+    grid-column: 1 / -1;
+  }
+
+  .areas-manager-heading .primary-button,
+  .services-manager-heading .primary-button {
+    flex: 0 0 auto;
+  }
+
+  .client-pet-thumbnail {
+    width: 54px;
+    height: 54px;
+  }
+
+  .area-manager-row {
+    grid-template-columns: 32px minmax(62px, 1fr) auto auto auto;
+    min-height: 58px;
+  }
+
+  .area-manager-row .area-manager-swatch {
+    width: 32px;
+    height: 32px;
+  }
+
+  .area-order-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .service-manager-list {
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--polish-border);
+    border-radius: var(--polish-radius-card);
+    background: var(--polish-surface);
+    box-shadow: var(--polish-shadow-soft);
+  }
+
+  .service-manager-row {
+    min-height: 58px;
+    grid-template-columns: minmax(64px, 1fr) auto auto auto;
+    gap: 5px;
+    padding: 8px 9px;
+    border: 0;
+    border-bottom: 1px solid var(--polish-border);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .service-manager-row:last-child {
+    border-bottom: 0;
+  }
+
+  .service-manager-row .service-reorder-controls {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .service-manager-row > .text-button {
+    grid-column: 3;
+    grid-row: 1;
+    min-height: 36px;
+    padding-inline: 3px;
+    font-size: 0.72rem;
+  }
+
+  .service-manager-row > .danger-text {
+    grid-column: 4;
+  }
+
+  .meal-heading {
+    align-items: flex-start;
+  }
+
+  .meal-view-actions {
+    gap: 4px;
+  }
+
+  .meal-view-actions .primary-button,
+  .meal-view-actions .secondary-button,
+  .meal-view-actions .text-button {
+    min-height: 38px;
+    padding-inline: 10px;
+    font-size: 0.76rem;
+  }
+}
+
 @layer legacy {
 
 /* Shared urgency hierarchy: meaning is always carried by a label, icon, border,

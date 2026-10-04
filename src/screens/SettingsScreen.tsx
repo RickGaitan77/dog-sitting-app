@@ -244,7 +244,7 @@ function SettingsScreen() {
   return (
     <section className="settings-screen">
       <div className="view-heading settings-heading">
-        <div><p className="eyebrow">Local preferences</p><h2>Settings</h2></div>
+        <div><h2>Local Settings</h2></div>
       </div>
 
       {error !== null && <p className="error-message" role="alert">{error}</p>}
