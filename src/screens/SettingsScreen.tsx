@@ -25,7 +25,7 @@ type ReminderSettingKey =
   | 'mealPlanningReminderEnabled'
 
 type ToggleSettingKey = ReminderSettingKey | 'showMealOverlay' | 'reduceMotion'
-type SettingsView =
+export type SettingsView =
   | 'settings'
   | 'areas'
   | 'services'
@@ -33,6 +33,11 @@ type SettingsView =
   | 'backup'
   | 'storage'
   | 'archived'
+
+type SettingsScreenProps = {
+  view: SettingsView
+  onViewChange: (view: SettingsView) => void
+}
 
 const REMINDER_CONTROLS: ReadonlyArray<{
   key: ReminderSettingKey
@@ -86,8 +91,7 @@ function formatBackupDate(value: string): string {
   }).format(new Date(value))
 }
 
-function SettingsScreen() {
-  const [view, setView] = useState<SettingsView>('settings')
+function SettingsScreen({ view, onViewChange }: SettingsScreenProps) {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [permission, setPermission] = useState<BrowserNotificationPermission>(
     getBrowserNotificationPermission,
@@ -155,19 +159,19 @@ function SettingsScreen() {
   }
 
   if (view === 'areas') {
-    return <AreasManager onBack={() => setView('settings')} />
+    return <AreasManager onBack={() => onViewChange('settings')} />
   }
 
   if (view === 'services') {
-    return <ServicesManager onBack={() => setView('settings')} />
+    return <ServicesManager onBack={() => onViewChange('settings')} />
   }
 
   if (view === 'archived') {
     return (
       <ArchivedRecordsView
-        onBack={() => setView('settings')}
-        onManageAreas={() => setView('areas')}
-        onManageServices={() => setView('services')}
+        onBack={() => onViewChange('settings')}
+        onManageAreas={() => onViewChange('areas')}
+        onManageServices={() => onViewChange('services')}
       />
     )
   }
@@ -176,14 +180,14 @@ function SettingsScreen() {
     return (
       <BackupRestoreView
         settings={settings}
-        onBack={() => setView('settings')}
+        onBack={() => onViewChange('settings')}
         onSettingsChange={setSettings}
       />
     )
   }
 
   if (view === 'storage') {
-    return <StorageAttachmentsView onBack={() => setView('settings')} />
+    return <StorageAttachmentsView onBack={() => onViewChange('settings')} />
   }
 
   if (view === 'notifications' && settings !== null) {
@@ -191,7 +195,7 @@ function SettingsScreen() {
       <section className="settings-subview notifications-settings-view">
         <div className="view-heading">
           <div>
-            <button className="text-button back-button" type="button" onClick={() => setView('settings')}>← Settings</button>
+            <button className="text-button back-button" type="button" onClick={() => onViewChange('settings')}>← Settings</button>
             <p className="eyebrow">Scheduling</p>
             <h2>Notifications</h2>
           </div>
@@ -254,26 +258,26 @@ function SettingsScreen() {
           <section className="settings-card settings-group-card" aria-labelledby="scheduling-settings-title">
             <div className="settings-section-heading"><h3 id="scheduling-settings-title">Scheduling</h3><p>Calendar setup, Services, and reminder preferences.</p></div>
             <div className="settings-list">
-              <button className="settings-link-row" type="button" onClick={() => setView('areas')}><span><strong>Areas &amp; Colors</strong><small>Create, reorder, recolor, archive, or restore scheduling Areas.</small></span><span aria-hidden="true">›</span></button>
-              <button className="settings-link-row" type="button" onClick={() => setView('services')}><span><strong>Services</strong><small>Create, reorder, rename, archive, or restore Booking Services.</small></span><span aria-hidden="true">›</span></button>
+              <button className="settings-link-row" type="button" onClick={() => onViewChange('areas')}><span><strong>Areas &amp; Colors</strong><small>Create, reorder, recolor, archive, or restore scheduling Areas.</small></span><span aria-hidden="true">›</span></button>
+              <button className="settings-link-row" type="button" onClick={() => onViewChange('services')}><span><strong>Services</strong><small>Create, reorder, rename, archive, or restore Booking Services.</small></span><span aria-hidden="true">›</span></button>
               <label className="setting-toggle"><span><strong>Calendar Display</strong><small>Show Meals on Calendar, including separate meal and prep dates.</small></span><input type="checkbox" checked={settings.showMealOverlay} disabled={isSaving} onChange={(event) => void updateToggleSetting('showMealOverlay', event.target.checked)} /></label>
-              <button className="settings-link-row" type="button" onClick={() => setView('notifications')}><span><strong>Notifications</strong><small>Manage in-app reminders and optional browser notification permission.</small></span><span aria-hidden="true">›</span></button>
+              <button className="settings-link-row" type="button" onClick={() => onViewChange('notifications')}><span><strong>Notifications</strong><small>Manage in-app reminders and optional browser notification permission.</small></span><span aria-hidden="true">›</span></button>
             </div>
           </section>
 
           <section className="settings-card settings-group-card" aria-labelledby="data-settings-title">
             <div className="settings-section-heading"><h3 id="data-settings-title">Data</h3><p>Protect and understand the local information stored on this device.</p></div>
             <div className="settings-list">
-              <button className="settings-link-row settings-link-row-prominent" type="button" onClick={() => setView('backup')}>
+              <button className="settings-link-row settings-link-row-prominent" type="button" onClick={() => onViewChange('backup')}>
                 <span><strong>Backup &amp; Restore</strong><small>Last Backup: {settings.lastBackupAt === undefined ? 'No backup recorded' : formatBackupDate(settings.lastBackupAt)}</small>{backupUrgency.level > 0 && <UrgencyIndicator level={backupUrgency.level} animate={backupUrgency.animate} icon={backupUrgency.level >= 3 ? '!' : '•'} label={backupUrgency.label} />}</span><span aria-hidden="true">›</span>
               </button>
-              <button className="settings-link-row" type="button" onClick={() => setView('storage')}><span><strong>Storage / Attachments</strong><small>View local attachment counts and approximate storage use.</small></span><span aria-hidden="true">›</span></button>
+              <button className="settings-link-row" type="button" onClick={() => onViewChange('storage')}><span><strong>Storage / Attachments</strong><small>View local attachment counts and approximate storage use.</small></span><span aria-hidden="true">›</span></button>
             </div>
           </section>
 
           <section className="settings-card settings-group-card" aria-labelledby="records-settings-title">
             <div className="settings-section-heading"><h3 id="records-settings-title">Records</h3><p>Review records hidden from normal active lists.</p></div>
-            <div className="settings-list"><button className="settings-link-row" type="button" onClick={() => setView('archived')}><span><strong>Archived Records</strong><small>Restore archived Clients and Pets without losing history.</small></span><span aria-hidden="true">›</span></button></div>
+            <div className="settings-list"><button className="settings-link-row" type="button" onClick={() => onViewChange('archived')}><span><strong>Archived Records</strong><small>Restore archived Clients and Pets without losing history.</small></span><span aria-hidden="true">›</span></button></div>
           </section>
 
           <section className="settings-card settings-group-card" aria-labelledby="appearance-settings-title">

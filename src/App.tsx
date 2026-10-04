@@ -5,6 +5,7 @@ import BottomNav from './components/BottomNav'
 import FloatingAddButton from './components/FloatingAddButton'
 import ReminderCenter from './components/reminders/ReminderCenter'
 import { screenRegistry } from './config/screenRegistry'
+import type { SettingsView } from './screens/SettingsScreen'
 import type { AppScreen } from './Types/AppScreen'
 import type { ScheduleFilters } from './Types/ScheduleFilters'
 import { appServices } from './services'
@@ -13,6 +14,9 @@ import { REDUCE_MOTION_CHANGE_EVENT } from './utils/motionPreference'
 function App() {
   const [reduceMotion, setReduceMotion] = useState(false)
   const [activeTab, setActiveTab] = useState<AppScreen>('Calendar')
+  const [settingsView, setSettingsView] = useState<SettingsView>('settings')
+  const [settingsReturnTab, setSettingsReturnTab] =
+    useState<Exclude<AppScreen, 'Settings'>>('Calendar')
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [bookingCreationRequested, setBookingCreationRequested] =
     useState(false)
@@ -50,9 +54,25 @@ function App() {
   }, [])
 
   const changeTab = (tab: AppScreen) => {
+    if (tab === 'Settings') {
+      if (activeTab !== 'Settings') setSettingsReturnTab(activeTab)
+      setSettingsView('settings')
+    } else {
+      setSettingsView('settings')
+    }
     setActiveTab(tab)
     setShowAddMenu(false)
     setMealOpenRequested(null)
+  }
+
+  const handleHeaderBack = () => {
+    if (settingsView !== 'settings') {
+      setSettingsView('settings')
+      setShowAddMenu(false)
+      return
+    }
+
+    changeTab(settingsReturnTab)
   }
 
   return (
@@ -60,7 +80,7 @@ function App() {
       <AppHeader
         isSettingsOpen={activeTab === 'Settings'}
         onOpenSettings={() => changeTab('Settings')}
-        onBack={() => changeTab('Calendar')}
+        onBack={handleHeaderBack}
       />
 
       <div className="app-content">
@@ -70,6 +90,7 @@ function App() {
           eventCreationRequested,
           mealCreationRequested,
           mealOpenRequested,
+          settingsView,
           scheduleFilters,
           onScheduleFiltersChange: setScheduleFilters,
           onBookingCreationHandled: () =>
@@ -80,12 +101,14 @@ function App() {
             setMealCreationRequested(false),
           onOpenMeal: (mealId) => {
             setActiveTab('Meals')
+            setSettingsView('settings')
             setShowAddMenu(false)
             setBookingCreationRequested(false)
             setEventCreationRequested(false)
             setMealCreationRequested(false)
             setMealOpenRequested(mealId)
           },
+          onSettingsViewChange: setSettingsView,
         })}
       </div>
 

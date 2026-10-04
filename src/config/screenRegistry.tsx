@@ -5,18 +5,20 @@ import CalendarScreen from '../screens/CalendarScreen'
 import AgendaScreen from '../screens/AgendaScreen'
 import ClientsScreen from '../screens/ClientsScreen'
 import MealsScreen from '../screens/MealsScreen'
-import SettingsScreen from '../screens/SettingsScreen'
+import SettingsScreen, { type SettingsView } from '../screens/SettingsScreen'
 
 export type ScreenContext = {
   bookingCreationRequested: boolean
   eventCreationRequested: boolean
   mealCreationRequested: boolean
   mealOpenRequested: string | null
+  settingsView: SettingsView
   scheduleFilters: ScheduleFilters
   onBookingCreationHandled: () => void
   onEventCreationHandled: () => void
   onMealCreationHandled: () => void
   onOpenMeal: (mealId: string) => void
+  onSettingsViewChange: (view: SettingsView) => void
   onScheduleFiltersChange: (filters: ScheduleFilters) => void
 }
 
@@ -44,5 +46,10 @@ export const screenRegistry: Record<AppScreen, ScreenRenderer> = {
       onMealCreationHandled={context.onMealCreationHandled}
     />
   ),
-  Settings: () => <SettingsScreen />,
+  Settings: (context) => (
+    <SettingsScreen
+      view={context.settingsView}
+      onViewChange={context.onSettingsViewChange}
+    />
+  ),
 }
