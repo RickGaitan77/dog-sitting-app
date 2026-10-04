@@ -32,7 +32,6 @@ type CalendarScreenProps = {
   onBookingCreationHandled: () => void
   onEventCreationHandled: () => void
   onOpenMeal: (mealId: string) => void
-  onOpenSettings: () => void
   filters: ScheduleFilters
   onFiltersChange: (filters: ScheduleFilters) => void
 }
@@ -59,7 +58,6 @@ function CalendarScreen({
   onBookingCreationHandled,
   onEventCreationHandled,
   onOpenMeal,
-  onOpenSettings,
   filters,
   onFiltersChange,
 }: CalendarScreenProps) {
@@ -506,7 +504,6 @@ function CalendarScreen({
             setView({ name: 'event-detail', eventId })
           }
           onOpenMeal={onOpenMeal}
-          onOpenSettings={onOpenSettings}
         />
       </section>
     )

@@ -17,7 +17,6 @@ export type ScreenContext = {
   onEventCreationHandled: () => void
   onMealCreationHandled: () => void
   onOpenMeal: (mealId: string) => void
-  onOpenSettings: () => void
   onScheduleFiltersChange: (filters: ScheduleFilters) => void
 }
 

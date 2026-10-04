@@ -52,7 +52,6 @@ type MonthCalendarProps = {
   onEditEvent: (eventId: string) => void
   onNextMonth: () => void
   onOpenMeal: (mealId: string) => void
-  onOpenSettings: () => void
   onPreviousMonth: () => void
   onToday: () => void
   onViewBooking: (bookingId: string) => void
@@ -99,7 +98,6 @@ function MonthCalendar({
   onEditEvent,
   onNextMonth,
   onOpenMeal,
-  onOpenSettings,
   onPreviousMonth,
   onToday,
   onViewBooking,
@@ -310,7 +308,6 @@ function MonthCalendar({
       <div className="calendar-control-row" aria-label="Calendar controls">
         <button className="secondary-button" type="button" onClick={() => setOverlay({ name: 'filters' })}>Filter</button>
         <button className="secondary-button" type="button" onClick={() => setOverlay({ name: 'legend' })}>Legend</button>
-        <button className="secondary-button" type="button" onClick={onOpenSettings}>Settings</button>
       </div>
 
       <div className="calendar-toolbar">
