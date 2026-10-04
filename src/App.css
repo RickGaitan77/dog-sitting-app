@@ -1234,10 +1234,10 @@ textarea:focus-visible,
 }
 
 .app-header-flourish {
-  width: clamp(84px, 25vw, 112px);
+  width: clamp(96px, 27vw, 122px);
   height: 23px;
-  stroke-width: 1.2;
-  opacity: 0.76;
+  stroke-width: 1.35;
+  opacity: 0.82;
 }
 
 .app-header-flourish .app-header-horseshoe {
@@ -1245,35 +1245,31 @@ textarea:focus-visible,
 }
 
 .app-header-flourish .app-header-paw {
-  fill: rgba(188, 112, 140, 0.2);
-  stroke-width: 1.05;
+  fill: rgba(188, 112, 140, 0.24);
+  stroke-width: 1.15;
+}
+
+.app-header-flourish .app-header-berries {
+  fill: #bc708c;
+  stroke: none;
 }
 
 .view-heading {
   min-height: 42px;
   margin-bottom: 9px;
-  padding-bottom: 8px;
+  padding-bottom: 2px;
 }
 
 .view-heading::after,
 .agenda-heading::after {
-  content: '';
-  width: 72px;
-  height: 12px;
-  position: absolute;
-  top: auto;
-  bottom: -1px;
-  left: 0;
-  background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 14' fill='none' stroke='%23bc708c' stroke-width='1.25' stroke-linecap='round'%3E%3Cpath d='M1 11c17 0 23-8 37-8 13 0 20 7 32 5'/%3E%3Cpath d='M22 7c-4-4-8-4-11-3M48 5c2-4 5-5 9-5'/%3E%3Ccircle cx='76' cy='6' r='1.2' fill='%23d59aad' stroke='none'/%3E%3C/svg%3E");
-  font-size: 0;
-  opacity: 0.72;
-  transform: none;
+  content: none;
+  display: none;
 }
 
 .agenda-heading {
   position: relative;
   margin-bottom: 12px;
-  padding-bottom: 10px;
+  padding-bottom: 3px;
 }
 
 .agenda-heading > p {
@@ -1445,6 +1441,28 @@ textarea:focus-visible,
   font-size: 0.72rem;
 }
 
+.meal-day-heading {
+  border-bottom-color: #ddc2bc;
+  background: #f2dfda;
+  box-shadow: inset 0 -1px rgba(133, 83, 99, 0.035);
+}
+
+.meal-day-schedule {
+  border-bottom: 1px solid #e2cec8;
+  background: #f8eee9;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.68);
+}
+
+.meal-day-plan {
+  background: #fffefa;
+}
+
+.meal-schedule-item {
+  border-radius: 0 8px 8px 0;
+  background: rgba(255, 253, 250, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(225, 204, 197, 0.62);
+}
+
 .settings-heading {
   min-height: 38px;
   margin-bottom: 1px;
@@ -1509,13 +1527,13 @@ textarea:focus-visible,
 .area-order-button {
   width: 38px;
   height: 38px;
-  border-color: #e4cbd2;
+  border-color: #d6a9b7;
   border-radius: 999px;
-  background: #f9eaee;
-  color: #873254;
+  background: #f1d5df;
+  color: #722645;
   font-size: 1rem;
   font-weight: 850;
-  box-shadow: none;
+  box-shadow: 0 2px 6px rgba(112, 44, 72, 0.09), inset 0 1px rgba(255, 255, 255, 0.72);
 }
 
 .service-manager-row {
@@ -1525,9 +1543,9 @@ textarea:focus-visible,
 
 .backup-status-card,
 .restore-card {
-  border: 1px solid #ddc7c2;
+  border: 1px solid #d8bdb7;
   background: #fffefb;
-  box-shadow: 0 7px 21px rgba(83, 50, 62, 0.09);
+  box-shadow: 0 8px 23px rgba(83, 50, 62, 0.105);
 }
 
 .backup-status-card {
@@ -1535,7 +1553,20 @@ textarea:focus-visible,
 }
 
 .restore-card {
-  background: linear-gradient(145deg, #fffefb, #faf1ee);
+  background: linear-gradient(145deg, #fffefb, #f9efeb);
+}
+
+.backup-includes {
+  border: 1px solid #e2c9c3;
+  padding: 12px;
+  background: #f6e7e3;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.backup-status-details > div,
+.restore-summary-grid > div {
+  border-color: #e4cec8;
+  background: #faf1ed;
 }
 
 @media (max-width: 600px) {
@@ -1544,7 +1575,7 @@ textarea:focus-visible,
   }
 
   .app-header-flourish {
-    width: clamp(80px, 25vw, 94px);
+    width: clamp(94px, 28vw, 104px);
     height: 21px;
   }
 

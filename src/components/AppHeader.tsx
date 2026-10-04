@@ -16,20 +16,23 @@ function AppHeader({
       <h1>{APP_DISPLAY_NAME}</h1>
       <svg
         className="app-header-flourish"
-        viewBox="0 0 150 30"
+        viewBox="0 0 170 34"
         aria-hidden="true"
         focusable="false"
       >
         <g className="app-header-horseshoe">
-          <path d="M5 4v8c0 8 5 13 12 13s12-5 12-13V4M10 5v7c0 5 3 8 7 8s7-3 7-8V5" />
-          <circle cx="7.5" cy="7" r=".8" /><circle cx="26.5" cy="7" r=".8" />
+          <path d="M4 4v9c0 9 6 15 14 15s14-6 14-15V4M10 6v7c0 5 3 9 8 9s8-4 8-9V6" />
+          <circle cx="7" cy="8" r=".8" /><circle cx="29" cy="8" r=".8" /><circle cx="7" cy="15" r=".8" /><circle cx="29" cy="15" r=".8" />
         </g>
-        <path d="M28 18c20 2 30-11 48-9 17 2 25 12 43 8 6-1 10-4 14-7" />
-        <path d="M48 16c-4-6-9-8-14-8M67 10c-1-5 1-8 5-10M91 13c2-5 6-8 11-9M111 18c3 4 7 6 12 6" />
-        <path className="app-header-leaf" d="M43 13c-5 0-8-3-9-7 6 0 9 3 9 7ZM67 7c-2-4 1-7 5-9 2 5 0 8-5 9ZM94 9c1-5 5-7 10-7-1 5-5 8-10 7ZM115 20c4-2 8 0 10 4-5 2-9 0-10-4Z" />
+        <path className="app-header-vine" d="M29 20c13 5 23 1 31-7 8-7 18-9 27-3 10 7 18 14 31 10 10-3 14-11 24-12 5 0 9 1 13 4" />
+        <path d="M43 21c-2-7-7-11-13-13M55 16c-6 0-11-3-14-8M68 8c-1-5 2-8 6-10M82 8c3-5 8-7 13-6M96 15c0-6 3-10 8-13M111 21c4 4 9 6 14 5M125 17c5 1 10-1 14-5M142 8c0-4 3-7 7-8" />
+        <path className="app-header-leaf" d="M39 17c-5 1-9-2-10-7 6-1 10 2 10 7ZM51 13c-5 0-8-3-9-7 6 0 9 3 9 7ZM68 6c-2-4 1-8 6-10 2 5 0 9-6 10ZM83 7c2-5 7-7 12-6-2 5-6 8-12 6ZM97 12c0-5 3-9 8-11 2 5-1 10-8 11ZM115 22c4-3 9-1 12 4-5 3-10 1-12-4ZM128 15c4-4 9-4 13-1-3 5-8 6-13 1ZM143 6c1-5 5-7 10-7-1 5-5 8-10 7Z" />
+        <g className="app-header-berries">
+          <circle cx="58" cy="10" r="1.5" /><circle cx="61" cy="7" r="1.2" /><circle cx="107" cy="18" r="1.4" /><circle cx="111" cy="17" r="1.1" />
+        </g>
         <g className="app-header-paw">
-          <path d="M138 21c-4 0-7 3-7 6 0 2 2 3 4 2 2-1 4-1 6 0 2 1 4 0 4-2 0-3-3-6-7-6Z" />
-          <circle cx="130" cy="20" r="2" /><circle cx="135" cy="16" r="2.1" /><circle cx="141" cy="16" r="2.1" /><circle cx="146" cy="20" r="2" />
+          <path d="M158 24c-4 0-7 3-7 6 0 3 2 4 5 2 2-1 4-1 6 0 3 2 5 1 5-2 0-3-4-6-9-6Z" />
+          <circle cx="150" cy="23" r="2" /><circle cx="155" cy="19" r="2.1" /><circle cx="161" cy="19" r="2.1" /><circle cx="166" cy="23" r="2" />
         </g>
       </svg>
 
