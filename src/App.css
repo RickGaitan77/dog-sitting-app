@@ -3995,6 +3995,258 @@
   font-size: 0.84rem;
 }
 
+.settings-subview {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding-bottom: 88px;
+  text-align: left;
+}
+
+.settings-view-intro {
+  margin: 12px 0 0;
+  color: #706267;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.settings-group-card {
+  overflow: hidden;
+}
+
+.settings-link-row-prominent {
+  border-left: 4px solid #a94f72;
+  padding-left: 12px;
+  background: #fff5f7;
+}
+
+.settings-link-row .urgency-indicator {
+  width: fit-content;
+  margin-top: 5px;
+}
+
+.about-settings-details,
+.backup-status-details,
+.restore-summary-grid {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.about-settings-details > div,
+.backup-status-details > div,
+.restore-summary-grid > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #eadfd8;
+  padding: 8px 0;
+}
+
+.about-settings-details dt,
+.backup-status-details dt,
+.restore-summary-grid dt {
+  color: #75686c;
+  font-size: 0.78rem;
+}
+
+.about-settings-details dd,
+.backup-status-details dd,
+.restore-summary-grid dd {
+  margin: 0;
+  color: #3d3437;
+  font-size: 0.84rem;
+  font-weight: 750;
+  text-align: right;
+}
+
+.archived-record-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.archived-record-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e6d8d2;
+  border-radius: 12px;
+  padding: 11px;
+  background: white;
+}
+
+.archived-pet-row {
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+}
+
+.archived-record-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.archived-record-copy strong,
+.archived-record-copy small {
+  overflow-wrap: anywhere;
+}
+
+.archived-record-copy small {
+  color: #74676b;
+  font-size: 0.76rem;
+}
+
+.archived-record-copy em {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: #eee5e1;
+  color: #675a5e;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.archived-pet-photo,
+.archived-pet-placeholder {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+.archived-pet-photo {
+  display: block;
+  object-fit: cover;
+}
+
+.archived-pet-placeholder {
+  display: grid;
+  place-items: center;
+  background: #f2e7e2;
+  font-size: 1.25rem;
+}
+
+.compact-settings-empty {
+  margin: 14px 0 0;
+  border: 1px dashed #d9c9c3;
+  border-radius: 10px;
+  padding: 12px;
+  color: #75686c;
+  font-size: 0.84rem;
+}
+
+.storage-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.storage-stat-grid > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  border: 1px solid #e8dbd5;
+  border-radius: 10px;
+  padding: 11px;
+  background: white;
+}
+
+.storage-stat-grid span,
+.storage-quota-note,
+.storage-safety-note,
+.backup-includes {
+  color: #75686c;
+  font-size: 0.76rem;
+}
+
+.storage-stat-grid strong {
+  overflow-wrap: anywhere;
+  color: #3d3437;
+  font-size: 1rem;
+}
+
+.storage-quota-note,
+.storage-safety-note {
+  line-height: 1.45;
+}
+
+.storage-safety-note {
+  margin-top: 14px;
+  border-left: 4px solid #8c747d;
+  padding: 10px 12px;
+  background: #f7f0ed;
+}
+
+.backup-status-card > .urgency-indicator,
+.backup-create-button,
+.backup-includes,
+.restore-card > .backup-file-button {
+  margin-top: 14px;
+}
+
+.backup-includes {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid #eadfd8;
+  padding-top: 12px;
+}
+
+.restore-summary,
+.restore-confirmation {
+  margin-top: 16px;
+  border: 1px solid #ddcbc4;
+  border-radius: 12px;
+  padding: 14px;
+  background: white;
+}
+
+.restore-summary h4,
+.restore-confirmation h4 {
+  margin: 0;
+  color: #3d3437;
+}
+
+.restore-summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.restore-step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.restore-confirmation {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  border-color: #ba6475;
+  background: #fff4f5;
+}
+
+.restore-confirmation p {
+  margin: 5px 0 0;
+  color: #6e5058;
+  font-size: 0.82rem;
+}
+
+.restore-warning-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #a13e5c;
+  color: white;
+  font-weight: 850;
+}
+
+.restore-confirmation .restore-step-actions {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 600px) {
   .booking-screen:has(.booking-entry-form) {
     width: calc(100% + 16px);
@@ -4323,6 +4575,46 @@
 
   .client-booking-heading {
     align-items: flex-start;
+  }
+
+  .settings-card {
+    padding: 14px;
+  }
+
+  .permission-row,
+  .archived-record-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .permission-row {
+    display: flex;
+  }
+
+  .archived-record-row,
+  .archived-pet-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .archived-pet-photo,
+  .archived-pet-placeholder {
+    width: 48px;
+    height: 48px;
+  }
+
+  .archived-record-row > button,
+  .restore-step-actions > button,
+  .restore-card > .backup-file-button {
+    width: 100%;
+  }
+
+  .storage-stat-grid,
+  .restore-summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .restore-confirmation {
+    grid-template-columns: 30px minmax(0, 1fr);
   }
 
   .form-grid,
