@@ -7,7 +7,11 @@ import {
   type AreaInput,
 } from '../../services'
 import type { Area } from '../../Types'
-import { getReadableTextColor } from '../../utils/areaColors'
+import {
+  getAreaColorDisplayName,
+  getReadableTextColor,
+  resolveColorHex,
+} from '../../utils/areaColors'
 
 type AreasManagerProps = {
   onBack: () => void
@@ -201,15 +205,15 @@ function AreasManager({ onBack }: AreasManagerProps) {
         <div className="area-manager-list" aria-label="Active Areas">
           {activeAreas.map((area, index) => {
             const colorStyle = {
-              backgroundColor: area.color,
+              backgroundColor: resolveColorHex(area.color),
               color: getReadableTextColor(area.color),
             } as CSSProperties
             return (
               <article className="area-manager-row" key={area.id}>
-                <span className="area-manager-swatch" style={colorStyle} aria-hidden="true">Aa</span>
+                <span className="area-manager-swatch" style={colorStyle} aria-hidden="true" />
                 <span className="area-manager-identity">
                   <strong>{area.name}</strong>
-                  <small>{area.color}</small>
+                  <small>{getAreaColorDisplayName(area.color)}</small>
                 </span>
                 <span className="area-reorder-controls" aria-label={`Reorder ${area.name}`}>
                   <button type="button" className="area-order-button" disabled={isSaving || index === 0} onClick={() => void moveArea(area.id, -1)} aria-label={`Move ${area.name} up`}>↑</button>
@@ -234,8 +238,8 @@ function AreasManager({ onBack }: AreasManagerProps) {
           <div className="area-manager-list">
             {archivedAreas.map((area) => (
               <article className="area-manager-row archived" key={area.id}>
-                <span className="area-manager-swatch" style={{ backgroundColor: area.color, color: getReadableTextColor(area.color) }} aria-hidden="true">Aa</span>
-                <span className="area-manager-identity"><strong>{area.name}</strong><small>{area.color}</small></span>
+                <span className="area-manager-swatch" style={{ backgroundColor: resolveColorHex(area.color), color: getReadableTextColor(area.color) }} aria-hidden="true" />
+                <span className="area-manager-identity"><strong>{area.name}</strong><small>{getAreaColorDisplayName(area.color)}</small></span>
                 <button className="secondary-button" type="button" disabled={isSaving} onClick={() => void restoreArea(area)}>Restore</button>
               </article>
             ))}

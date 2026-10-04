@@ -18,7 +18,7 @@ import type {
 } from '../../Types'
 import type { ScheduleFilters } from '../../Types/ScheduleFilters'
 import { formatBookingDateRange } from '../agenda/agendaDates'
-import { getReadableTextColor } from '../../utils/areaColors'
+import { getReadableTextColor, resolveColorHex } from '../../utils/areaColors'
 import CalendarBottomSheet from './CalendarBottomSheet'
 import ScheduleQuickDetailSheet from './ScheduleQuickDetailSheet'
 import {
@@ -244,9 +244,9 @@ function MonthCalendar({
           .filter((name): name is string => name !== undefined)
           .join(', ')
     const label = event?.title ?? clientName ?? 'Calendar item'
-    const color = item.areaId === undefined
+    const color = resolveColorHex(item.areaId === undefined
       ? '#81767b'
-      : areaById.get(item.areaId)?.color ?? '#81767b'
+      : areaById.get(item.areaId)?.color ?? '#81767b')
     const segmentPosition = getCalendarSegmentPosition(
       item,
       date,
@@ -415,7 +415,7 @@ function MonthCalendar({
           <p className="calendar-sheet-intro">Area colors update automatically when Areas are changed.</p>
           <div className="calendar-legend-list">
             {legendAreas.map((area) => (
-              <div key={area.id}><i style={{ backgroundColor: area.color }} /><span><strong>{area.name}</strong>{area.archived && <small>Archived · shown for a visible record</small>}</span></div>
+              <div key={area.id}><i style={{ backgroundColor: resolveColorHex(area.color) }} /><span><strong>{area.name}</strong>{area.archived && <small>Archived · shown for a visible record</small>}</span></div>
             ))}
             {filters.events && <div><i className="neutral-event-swatch" /><span><strong>Event without Area</strong><small>Neutral event treatment</small></span></div>}
             {showMealOverlay && filters.meals && <div><i className="meal-overlay-swatch" /><span><strong>Meal Overlay</strong><small>Meals and prep stay secondary</small></span></div>}
@@ -437,7 +437,7 @@ function MonthCalendar({
                 const area = item.areaId === undefined ? undefined : areaById.get(item.areaId)
                 return (
                   <button type="button" data-calendar-item-id={item.id} onClick={() => openWorkItem(item)} key={item.key}>
-                    <i style={{ backgroundColor: area?.color ?? '#81767b' }} />
+                    <i style={{ backgroundColor: resolveColorHex(area?.color ?? '#81767b') }} />
                     <span><strong>{label}</strong><small>{item.kind === 'booking' ? 'Booking' : 'General Event'} · {formatBookingDateRange(item.startDate, item.endDate)}</small></span>
                   </button>
                 )

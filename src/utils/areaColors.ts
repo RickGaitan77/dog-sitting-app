@@ -36,10 +36,10 @@ export const AREA_COLOR_PALETTE: readonly AreaColorOption[] = [
 
 const NAMED_COLORS: Readonly<Record<string, string>> = {
   black: '#000000',
-  blue: '#0000ff',
-  green: '#008000',
-  orange: '#ffa500',
-  red: '#ff0000',
+  blue: '#3f83c5',
+  green: '#5a9d62',
+  orange: '#e98236',
+  red: '#c94949',
   white: '#ffffff',
 }
 
@@ -50,6 +50,19 @@ export function resolveColorHex(color: string): string {
     return `#${normalized.slice(1).split('').map((part) => `${part}${part}`).join('')}`
   }
   return NAMED_COLORS[normalized] ?? '#81767b'
+}
+
+export function getAreaColorDisplayName(color: string): string {
+  const normalized = color.trim().toLowerCase()
+  if (Object.hasOwn(NAMED_COLORS, normalized)) {
+    return `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
+  }
+
+  const resolved = resolveColorHex(color)
+  const preset = AREA_COLOR_PALETTE.find(
+    (option) => option.value.toLowerCase() === resolved,
+  )
+  return preset?.label ?? `Custom · ${resolved.toUpperCase()}`
 }
 
 function channelLuminance(channel: number): number {

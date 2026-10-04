@@ -14,6 +14,7 @@ import PetForm from '../components/clients/PetForm'
 import { appServices, type NewEntity } from '../services'
 import type { Area, Booking, Client, Pet, Service } from '../Types'
 import UrgencyIndicator from '../components/urgency/UrgencyIndicator'
+import { resolveColorHex } from '../utils/areaColors'
 import { getTentativeBookingUrgency, urgencyClassName } from '../utils/urgency'
 
 type ClientFormMode = 'create' | 'edit' | null
@@ -57,7 +58,7 @@ function BookingSummaryCard({
     .map((id) => services.get(id)?.name ?? 'Unknown service')
     .join(' • ')
   const style = {
-    '--client-area-color': area?.color ?? '#a89b96',
+    '--client-area-color': resolveColorHex(area?.color ?? '#a89b96'),
   } as CSSProperties
   const tentativeUrgency = getTentativeBookingUrgency(booking, today)
   const tentativeClass = tentativeUrgency.level > 0
@@ -316,7 +317,7 @@ function ClientsScreen() {
           setPetBeingEdited(null)
         }}>← All clients</button>
 
-        <header className="client-identity-card" style={{ '--client-area-color': selectedArea?.color ?? '#a89b96' } as CSSProperties}>
+        <header className="client-identity-card" style={{ '--client-area-color': resolveColorHex(selectedArea?.color ?? '#a89b96') } as CSSProperties}>
           <div>
             <p className="eyebrow">Client</p>
             <h2>{selectedClient.name}</h2>
@@ -477,7 +478,7 @@ function ClientsScreen() {
               .map((id) => serviceById.get(id)?.name ?? 'Unknown service')
               .join(' • ')
             const photos = clientPets.filter((pet) => pet.photoUrl !== undefined).slice(0, 3)
-            const style = { '--client-area-color': area?.color ?? '#a89b96' } as CSSProperties
+            const style = { '--client-area-color': resolveColorHex(area?.color ?? '#a89b96') } as CSSProperties
 
             return (
               <article className="client-card client-directory-card" style={style} key={client.id}>

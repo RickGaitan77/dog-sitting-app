@@ -13,6 +13,7 @@ function AppHeader({
 }: AppHeaderProps) {
   return (
     <header className="app-header">
+      <span className="app-header-flourish" aria-hidden="true">❦</span>
       <h1>{APP_DISPLAY_NAME}</h1>
 
       {isSettingsOpen ? (

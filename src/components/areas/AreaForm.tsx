@@ -21,7 +21,7 @@ function AreaForm({ area, isSaving, onCancel, onSubmit }: AreaFormProps) {
   )
   const [validationError, setValidationError] = useState<string | null>(null)
   const previewStyle = {
-    backgroundColor: color,
+    backgroundColor: resolveColorHex(color),
     color: getReadableTextColor(color),
   } as CSSProperties
 

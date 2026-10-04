@@ -20,6 +20,7 @@ import {
 } from './agendaDates'
 import UrgencyIndicator from '../urgency/UrgencyIndicator'
 import { getTentativeBookingUrgency, urgencyClassName } from '../../utils/urgency'
+import { resolveColorHex } from '../../utils/areaColors'
 
 type BookingAgendaItem = {
   kind: 'booking'
@@ -311,7 +312,9 @@ function AgendaCard({
   onOpenBooking: (bookingId: string) => void
   onOpenEvent: (eventId: string) => void
 }) {
-  const areaColor = item.area?.color ?? (item.kind === 'event' ? '#81767b' : '#a89b96')
+  const areaColor = resolveColorHex(
+    item.area?.color ?? (item.kind === 'event' ? '#81767b' : '#a89b96'),
+  )
   const style = { '--agenda-area-color': areaColor } as CSSProperties
 
   if (item.kind === 'event') {
