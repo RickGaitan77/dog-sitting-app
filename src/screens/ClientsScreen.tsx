@@ -39,7 +39,6 @@ function BookingSummaryCard({
   pets,
   services,
   today,
-  animateTentative,
   onOpen,
 }: {
   areas: Map<string, Area>
@@ -47,7 +46,6 @@ function BookingSummaryCard({
   pets: Map<string, Pet>
   services: Map<string, Service>
   today: string
-  animateTentative?: boolean
   onOpen: (bookingId: string) => void
 }) {
   const area = areas.get(booking.areaId)
@@ -62,10 +60,7 @@ function BookingSummaryCard({
   } as CSSProperties
   const tentativeUrgency = getTentativeBookingUrgency(booking, today)
   const tentativeClass = tentativeUrgency.level > 0
-    ? urgencyClassName({
-        ...tentativeUrgency,
-        animate: tentativeUrgency.animate && animateTentative === true,
-      })
+    ? urgencyClassName(tentativeUrgency)
     : ''
 
   return (
@@ -81,7 +76,7 @@ function BookingSummaryCard({
         {tentativeUrgency.level > 0 && (
           <UrgencyIndicator
             level={tentativeUrgency.level}
-            animate={tentativeUrgency.animate && animateTentative === true}
+            animate={tentativeUrgency.animate}
             compact
             label={tentativeUrgency.label}
           />
@@ -298,9 +293,6 @@ function ClientsScreen() {
       selectedClient.id,
       today,
     )
-    const animatedTentativeBookingId = upcoming.find(
-      (booking) => getTentativeBookingUrgency(booking, today).level === 2,
-    )?.id
     const contactFields = [
       ['Phone', selectedClient.phone],
       ['Email', selectedClient.email],
@@ -389,7 +381,7 @@ function ClientsScreen() {
           <h3 id="client-upcoming-heading">Upcoming Bookings</h3>
           {upcoming.length === 0 ? <p className="client-section-empty">No upcoming bookings.</p> : (
             <div className="client-booking-list">
-              {upcoming.map((booking) => <BookingSummaryCard key={booking.id} booking={booking} areas={areaById} pets={petById} services={serviceById} today={today} animateTentative={booking.id === animatedTentativeBookingId} onOpen={setSelectedBookingId} />)}
+              {upcoming.map((booking) => <BookingSummaryCard key={booking.id} booking={booking} areas={areaById} pets={petById} services={serviceById} today={today} onOpen={setSelectedBookingId} />)}
             </div>
           )}
         </section>

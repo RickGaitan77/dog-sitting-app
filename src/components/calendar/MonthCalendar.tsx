@@ -130,12 +130,6 @@ function MonthCalendar({
     () => new Map(bookings.map((booking) => [booking.id, booking])),
     [bookings],
   )
-  const animatedTentativeBookingId = useMemo(
-    () => [...bookings]
-      .filter((booking) => getTentativeBookingUrgency(booking, today).level === 2)
-      .sort((left, right) => left.startDate.localeCompare(right.startDate))[0]?.id,
-    [bookings, today],
-  )
   const eventById = useMemo(
     () => new Map(events.map((event) => [event.id, event])),
     [events],
@@ -262,8 +256,7 @@ function MonthCalendar({
     const tentativeUrgency = booking === undefined
       ? { level: 0 as const, animate: false, label: 'Normal' }
       : getTentativeBookingUrgency(booking, today)
-    const shouldAnimateTentative = tentativeUrgency.animate &&
-      booking?.id === animatedTentativeBookingId
+    const shouldAnimateTentative = tentativeUrgency.animate
 
     return (
       <button
