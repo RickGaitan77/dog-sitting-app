@@ -27,6 +27,12 @@
   --polish-radius-control: 11px;
   --polish-shadow: 0 8px 24px rgba(91, 56, 70, 0.08);
   --polish-shadow-soft: 0 3px 12px rgba(91, 56, 70, 0.055);
+  --layer-app-header: 40;
+  --layer-bottom-nav: 45;
+  --layer-floating-control: 50;
+  --layer-floating-menu: 60;
+  --layer-overlay: 100;
+  --layer-dialog: 120;
   min-height: 100svh;
   padding-bottom: calc(68px + env(safe-area-inset-bottom));
   background:
@@ -38,7 +44,7 @@
 .app-header {
   min-height: 44px;
   position: sticky;
-  z-index: 40;
+  z-index: var(--layer-app-header);
   top: 0;
   box-sizing: border-box;
   gap: 8px;
@@ -397,7 +403,7 @@ textarea:focus-visible,
   width: min(100%, 760px);
   min-height: 64px;
   position: fixed;
-  z-index: 45;
+  z-index: var(--layer-bottom-nav);
   right: 0;
   bottom: 0;
   left: 0;
@@ -439,6 +445,7 @@ textarea:focus-visible,
 }
 
 .floating-add-button {
+  z-index: var(--layer-floating-control);
   right: max(18px, calc((100vw - 760px) / 2 + 18px));
   bottom: calc(76px + env(safe-area-inset-bottom));
   width: 54px;
@@ -449,6 +456,7 @@ textarea:focus-visible,
 }
 
 .add-menu {
+  z-index: var(--layer-floating-menu);
   right: max(18px, calc((100vw - 760px) / 2 + 18px));
   bottom: calc(140px + env(safe-area-inset-bottom));
   border-color: var(--polish-border);
@@ -3418,7 +3426,7 @@ textarea:focus-visible,
 
 .booking-picker-backdrop {
   position: fixed;
-  z-index: 120;
+  z-index: var(--layer-dialog);
   inset: 0;
   display: flex;
   align-items: flex-end;
@@ -5136,7 +5144,7 @@ textarea:focus-visible,
 
 .attachment-preview-backdrop {
   position: fixed;
-  z-index: 20;
+  z-index: var(--layer-dialog);
   inset: 0;
   display: grid;
   place-items: center;
@@ -5512,7 +5520,7 @@ textarea:focus-visible,
 
 .calendar-sheet-backdrop {
   position: fixed;
-  z-index: 100;
+  z-index: var(--layer-overlay);
   inset: 0;
   display: flex;
   align-items: flex-end;
