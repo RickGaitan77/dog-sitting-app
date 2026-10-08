@@ -2522,6 +2522,10 @@ textarea:focus-visible,
   opacity: 0.55;
 }
 
+.cancel-booking-button:disabled {
+  cursor: not-allowed;
+}
+
 .button-row,
 .form-actions,
 .client-card-actions {
@@ -2884,6 +2888,37 @@ textarea:focus-visible,
 .client-booking-card.urgency-level-2 {
   outline: 2px solid var(--urgency-color);
   outline-offset: -2px;
+}
+
+.client-booking-card .urgency-indicator.urgency-level-2 {
+  border: 2px solid #743900;
+  background: #ffd77f;
+  color: #442100;
+  box-shadow: 0 1px 3px rgba(88, 43, 0, 0.2);
+}
+
+.client-booking-card .urgency-indicator.urgency-level-2 .urgency-icon {
+  box-sizing: border-box;
+  border: 1px solid #fff1c2;
+  background: #743900;
+  color: #fffaf0;
+}
+
+@keyframes client-tentative-breathe {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(255, 244, 199, 0.92), 0 0 0 0 rgba(150, 75, 0, 0.18);
+    opacity: 0.92;
+    transform: scale(0.95);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(255, 246, 209, 0.98), 0 0 0 6px rgba(184, 93, 0, 0.38);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.client-booking-card .urgency-indicator.urgency-level-2.urgency-animated .urgency-icon {
+  animation: client-tentative-breathe 2.2s ease-in-out infinite;
 }
 
 .client-booking-card > button {
@@ -3761,6 +3796,12 @@ textarea:focus-visible,
   color: #54494c;
   font-size: 0.84rem;
   font-weight: 650;
+}
+
+.recurrence-weekday-hint {
+  width: 100%;
+  margin: 0 0 2px;
+  line-height: 1.4;
 }
 
 .recurrence-end-field {
@@ -5342,7 +5383,7 @@ textarea:focus-visible,
 
 .calendar-work-lanes {
   display: grid;
-  grid-template-rows: repeat(3, 18px);
+  grid-template-rows: repeat(4, 18px);
   gap: 2px;
   margin: 2px -4px 0;
 }
@@ -5441,7 +5482,7 @@ textarea:focus-visible,
 
 .calendar-more-button {
   min-width: 0;
-  grid-row: 3;
+  grid-row: 4;
   overflow: hidden;
   margin-inline: 2px;
   border: 0;
@@ -6136,7 +6177,7 @@ textarea:focus-visible,
   }
 
   .calendar-work-lanes {
-    grid-template-rows: repeat(3, 16px);
+    grid-template-rows: repeat(4, 16px);
     gap: 2px;
     margin-inline: -3px;
   }

@@ -70,7 +70,7 @@ type CalendarOverlay =
   | null
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const MAX_VISIBLE_WORK_LANES = 2
+const MAX_VISIBLE_WORK_LANES = 3
 const SWIPE_THRESHOLD_PX = 54
 
 function formatDaySummaryDate(date: string): string {

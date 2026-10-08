@@ -413,7 +413,7 @@ function CalendarScreen({
           </div>
           <div className="button-row">
             <button className="secondary-button" type="button" onClick={() => setView({ name: 'edit', bookingId: selectedBooking.id, returnTo: effectiveView.returnTo })}>Edit</button>
-            <button className="danger-button" type="button" disabled={isSaving || selectedBooking.status === 'Cancelled'} onClick={() => void cancelBooking(selectedBooking)}>Cancel booking</button>
+            <button className="danger-button cancel-booking-button" type="button" disabled={isSaving || selectedBooking.status === 'Cancelled'} onClick={() => void cancelBooking(selectedBooking)}>Cancel booking</button>
           </div>
         </div>
 
