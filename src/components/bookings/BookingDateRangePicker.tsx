@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 
 type BookingDateRangePickerProps = {
   endDate: string
@@ -55,6 +55,36 @@ function formatDate(date: string): string {
 }
 
 function BookingDateRangePicker({ endDate, onCancel, onConfirm, startDate }: BookingDateRangePickerProps) {
+  useLayoutEffect(() => {
+    const { scrollX, scrollY } = window
+    const root = document.documentElement
+    const body = document.body
+    const lockStyles = (element: HTMLElement, properties: Record<string, string>) => {
+      const saved = Object.keys(properties).map((property) => ({
+        property,
+        value: element.style.getPropertyValue(property),
+        priority: element.style.getPropertyPriority(property),
+      }))
+      Object.entries(properties).forEach(([property, value]) => element.style.setProperty(property, value))
+      return () => saved.forEach(({ property, value, priority }) => {
+        if (value === '') element.style.removeProperty(property)
+        else element.style.setProperty(property, value, priority)
+      })
+    }
+
+    // A fixed body also locks touch scrolling on iOS; overflow alone does not.
+    const restoreRoot = lockStyles(root, { overflow: 'hidden', 'overscroll-behavior': 'none' })
+    const restoreBody = lockStyles(body, {
+      position: 'fixed', top: `${-scrollY}px`, left: `${-scrollX}px`, width: '100%', overflow: 'hidden',
+    })
+
+    return () => {
+      restoreBody()
+      restoreRoot()
+      window.scrollTo({ left: scrollX, top: scrollY, behavior: 'instant' })
+    }
+  }, [])
+
   const [visibleMonth, setVisibleMonth] = useState(() => dateToMonth(startDate))
   const [draftStart, setDraftStart] = useState(startDate)
   const [draftEnd, setDraftEnd] = useState(endDate)
@@ -87,7 +117,7 @@ function BookingDateRangePicker({ endDate, onCancel, onConfirm, startDate }: Boo
   }
 
   return (
-    <div className="booking-picker-backdrop" role="dialog" aria-modal="true" aria-labelledby="booking-date-picker-title">
+    <div className="booking-picker-backdrop booking-date-picker-backdrop" role="dialog" aria-modal="true" aria-labelledby="booking-date-picker-title">
       <section className="booking-picker-sheet booking-date-picker">
         <div className="booking-picker-heading">
           <div>
